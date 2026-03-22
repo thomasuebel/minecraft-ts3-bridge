@@ -15,7 +15,7 @@ public class PluginConfig {
     // Message sent to players on join. Use {address} as a placeholder for tsServerAddress.
     private String advertisementMessage = "Join our TeamSpeak server: {address}";
     private boolean chatBridgeEnabled = true;
-    private String tsQueryNickname = "MinecraftTS";
+    private String tsQueryNickname = "TS3Bridge";
     // Channel ID for the chat bridge. 0 = no channel filter (server-wide messages).
     private int tsBridgeChannelId = 0;
     // When true, raw TS event map contents are logged at INFO for debugging.

@@ -1,10 +1,10 @@
-# MinecraftTS
+# TS3Bridge
 
 My kids play Minecraft and wanted to talk to each other while doing so. I prefer TeamSpeak to Discord - self-hosted, no big tech, no accounts required for voice. The existing plugins (TeamspeakIP, BukkitSpeak) didn't work with the virtual server setup I have through 4netplayers hosting, so I built this one. Hope someone finds it useful.
 
 ---
 
-MinecraftTS is a [Paper](https://papermc.io/) plugin that bridges Minecraft and a TeamSpeak 3 server via ServerQuery:
+TS3Bridge is a [Paper](https://papermc.io/) plugin for Minecraft that creates a bridge between Minecraft and a TeamSpeak 3 server via ServerQuery:
 
 - Bidirectional chat relay between MC and TS
 - Join/leave announcements in both directions
@@ -24,14 +24,14 @@ MinecraftTS is a [Paper](https://papermc.io/) plugin that bridges Minecraft and 
 ## Installation
 
 1. Drop the JAR into `plugins/`.
-2. Start the server -  `plugins/MinecraftTS/config.json` is created with defaults.
+2. Start the server -  `plugins/TS3Bridge/config.json` is created with defaults.
 3. Stop, fill in your TS credentials, restart (or `/ts reload`).
 
 ---
 
 ## Configuration
 
-`plugins/MinecraftTS/config.json`:
+`plugins/TS3Bridge/config.json`:
 
 ```json
 {
@@ -41,7 +41,7 @@ MinecraftTS is a [Paper](https://papermc.io/) plugin that bridges Minecraft and 
   "tsQueryPassword": "your-query-password",
   "tsVirtualServerId": 1,
   "tsVirtualServerPort": 0,
-  "tsQueryNickname": "MinecraftTS",
+  "tsQueryNickname": "TS3Bridge",
   "tsBridgeChannelId": 0,
   "tsServerAddress": "your-ts3-host.example.com",
   "advertisementMessage": "Join our TeamSpeak server: {address}",
@@ -58,7 +58,7 @@ MinecraftTS is a [Paper](https://papermc.io/) plugin that bridges Minecraft and 
 | `tsQueryPassword` | *(empty)* | ServerQuery password |
 | `tsVirtualServerId` | `1` | Virtual server ID -  ignored when `tsVirtualServerPort > 0` |
 | `tsVirtualServerPort` | `0` | Voice port -  use this for hosted providers instead of the ID (see below) |
-| `tsQueryNickname` | `MinecraftTS` | Bot name shown in TS |
+| `tsQueryNickname` | `TS3Bridge` | Bot name shown in TS |
 | `tsBridgeChannelId` | `0` | Restrict bridge to a specific channel; `0` = server-wide |
 | `tsServerAddress` | `localhost` | Address shown in the join advertisement |
 | `advertisementMessage` | `Join our TeamSpeak server: {address}` | Sent to unlinked players on join |
@@ -120,7 +120,7 @@ Set `tsBridgeChannelId` to a channel ID to scope everything to one channel. The 
 ./gradlew shadowJar
 ```
 
-Output: `build/libs/minecraft-ts3-plugin-<version>.jar`
+Output: `build/libs/ts3-bridge-<version>.jar`
 
 ---
 

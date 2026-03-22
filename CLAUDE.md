@@ -1,4 +1,4 @@
-# minecraft-ts3-plugin — CLAUDE.md
+# TS3Bridge — CLAUDE.md
 
 A Minecraft plugin bridging Minecraft chat and player presence with a TeamSpeak 3 server via ServerQuery.
 
@@ -45,7 +45,7 @@ Base: `de.thomasuebel.mc.ts3bridge`
 | `tsVirtualServerId` | `1` | Virtual server ID |
 | `tsVirtualServerPort` | `0` | Voice port (when > 0, overrides `tsVirtualServerId`) |
 | `tsServerAddress` | `localhost` | Address shown in advertisement |
-| `tsQueryNickname` | `MinecraftTS` | Bot display name in TS |
+| `tsQueryNickname` | `TS3Bridge` | Bot display name in TS |
 | `tsBridgeChannelId` | `0` | Bridge channel ID; 0 = server-wide |
 | `advertisementMessage` | `Join our TeamSpeak server: {address}` | Join message template |
 | `chatBridgeEnabled` | `true` | Enable MC↔TS chat relay |
@@ -71,7 +71,7 @@ LuckPerms nodes; vanilla OP as fallback. Admin commands (`status`, `reload`, `li
 
 ## Plugin Metadata
 
-- **Name:** `MinecraftTS`
+- **Name:** `TS3Bridge`
 - **Main class:** `de.thomasuebel.mc.ts3bridge.minecraft.MctsPlugin`
 - **API version:** `1.21`
 

@@ -25,5 +25,5 @@ out/
 .LSOverride
 
 # Plugin runtime files (never commit live server credentials or player data)
-plugins/MinecraftTS/config.json
-plugins/MinecraftTS/mappings.json
+plugins/TS3Bridge/config.json
+plugins/TS3Bridge/mappings.json

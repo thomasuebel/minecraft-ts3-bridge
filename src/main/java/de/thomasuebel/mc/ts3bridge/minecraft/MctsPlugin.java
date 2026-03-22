@@ -32,7 +32,7 @@ public class MctsPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        getLogger().info("Shutting down MinecraftTS...");
+        getLogger().info("Shutting down TS3Bridge...");
 
         if (mappingsRepository != null) {
             getLogger().info("Saving player mappings...");
@@ -42,11 +42,11 @@ public class MctsPlugin extends JavaPlugin {
             teamspeakConnection.disconnect();
         }
 
-        getLogger().info("MinecraftTS disabled.");
+        getLogger().info("TS3Bridge disabled.");
     }
 
     public void reload() {
-        getLogger().info("Reloading MinecraftTS...");
+        getLogger().info("Reloading TS3Bridge...");
 
         if (mappingsRepository != null) {
             getLogger().info("Saving player mappings...");
@@ -60,7 +60,7 @@ public class MctsPlugin extends JavaPlugin {
 
         initialize();
 
-        getLogger().info("MinecraftTS reload complete.");
+        getLogger().info("TS3Bridge reload complete.");
     }
 
     private void initialize() {
@@ -140,7 +140,7 @@ public class MctsPlugin extends JavaPlugin {
         // --- TS→MC chat bridge ---
         registerTsToMcBridge(chatBridgeService, config.isDebugLogging());
 
-        getLogger().info("MinecraftTS enabled successfully.");
+        getLogger().info("TS3Bridge enabled successfully.");
     }
 
     /**
