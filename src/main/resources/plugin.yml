@@ -1,4 +1,4 @@
-name: MinecraftTS
+name: TS3Bridge
 version: '${version}'
 main: de.thomasuebel.mc.ts3bridge.minecraft.MctsPlugin
 api-version: '1.21'

@@ -48,7 +48,7 @@ class ConfigManagerTest {
         assertEquals(10011, config.getTsQueryPort());
         assertEquals(1, config.getTsVirtualServerId());
         assertTrue(config.isChatBridgeEnabled());
-        assertEquals("MinecraftTS", config.getTsQueryNickname());
+        assertEquals("TS3Bridge", config.getTsQueryNickname());
         assertEquals(0, config.getTsBridgeChannelId());
     }
 

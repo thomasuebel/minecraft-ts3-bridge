@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# release.sh — build a release candidate zip for MinecraftTS
+# release.sh — build a release candidate zip for TS3Bridge
 #
-# Output: release/MinecraftTS-<version>.zip
-#   ├── MinecraftTS-<version>.jar   (fat jar — drop into plugins/)
+# Output: release/TS3Bridge-<version>.zip
+#   ├── TS3Bridge-<version>.jar   (fat jar — drop into plugins/)
 #   ├── README.md
 #   └── CHANGELOG.md
 # ---------------------------------------------------------------------------
@@ -20,11 +20,11 @@ set +u; source "$HOME/.sdkman/bin/sdkman-init.sh" 2>/dev/null || true; set -u
 
 # --- Determine version from the built jar ---
 JAR=$(ls build/libs/*.jar | head -1)
-FILENAME=$(basename "$JAR")                        # minecraft-ts3-plugin-1.0.0-SNAPSHOT.jar
-VERSION="${FILENAME#minecraft-ts3-plugin-}"        # 1.0.0-SNAPSHOT.jar
-VERSION="${VERSION%.jar}"                          # 1.0.0-SNAPSHOT
+FILENAME=$(basename "$JAR")                   # ts3-bridge-1.0.0-SNAPSHOT.jar
+VERSION="${FILENAME#ts3-bridge-}"             # 1.0.0-SNAPSHOT.jar
+VERSION="${VERSION%.jar}"                     # 1.0.0-SNAPSHOT
 
-RELEASE_NAME="MinecraftTS-${VERSION}"
+RELEASE_NAME="TS3Bridge-${VERSION}"
 RELEASE_DIR="release/${RELEASE_NAME}"
 ZIP_PATH="release/${RELEASE_NAME}.zip"
 

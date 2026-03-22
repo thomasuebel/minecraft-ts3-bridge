@@ -112,7 +112,7 @@ class TsCommandTest {
 
         verify(sender).sendMessage("[TS] Status: Connected");
         verify(sender).sendMessage(contains("localhost:10011"));
-        verify(sender).sendMessage(contains("MinecraftTS"));
+        verify(sender).sendMessage(contains("TS3Bridge"));
         verify(sender).sendMessage(contains("server-wide"));
         verify(sender).sendMessage(contains("enabled"));
         verify(sender).sendMessage(contains("Clients online: 2"));

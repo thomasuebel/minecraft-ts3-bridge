@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to MinecraftTS are documented here.
+All notable changes to TS3Bridge are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
@@ -155,7 +155,7 @@ The `advertisementMode` config field and `ACTIONBAR` delivery path have been rem
 
 ### Iteration 13 — Configurable ServerQuery nickname
 
-- **Added** `tsQueryNickname` to `PluginConfig` (default `"MinecraftTS"`)
+- **Added** `tsQueryNickname` to `PluginConfig` (default `"TS3Bridge"`)
 - `TeamspeakConnection.connect()` now calls `api.setNickname()` after selecting the virtual server, so MC→TS chat messages appear under a recognisable name instead of the query account name
 - Fixes the "Spy981"-style display where the query account name collided with a real player's TS nickname (causing TS to append a number)
 
@@ -252,7 +252,7 @@ The `advertisementMode` config field and `ACTIONBAR` delivery path have been rem
 | `tsServerAddress` | `localhost` | Address advertised to players |
 | `advertisementMessage` | `Join our TeamSpeak server: {address}` | Join message template (see iteration 12) |
 | `chatBridgeEnabled` | `true` | Enable/disable MC↔TS chat relay |
-| `tsQueryNickname` | `MinecraftTS` | Nickname shown in TS for ServerQuery messages (see iteration 13) |
+| `tsQueryNickname` | `TS3Bridge` | Nickname shown in TS for ServerQuery messages (see iteration 13) |
 | `tsBridgeChannelId` | `0` | TS channel ID for the chat bridge; 0 = server-wide (see iteration 14) |
 | `debugLogging` | `false` | Log raw TS event data at INFO for bridge diagnostics (see iteration 22) |
 
