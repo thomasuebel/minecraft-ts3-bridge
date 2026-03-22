@@ -1,0 +1,41 @@
+name: MinecraftTS
+version: '${version}'
+main: de.thomasuebel.mc.ts3bridge.minecraft.MctsPlugin
+api-version: '1.21'
+description: TeamSpeak 3 integration plugin for Paper servers
+authors: [ thomas ]
+
+commands:
+  ts:
+    description: TeamSpeak integration commands
+    usage: /ts <who|status|link|unlink|reload> [args]
+    permission: mcts.command.use
+
+permissions:
+  mcts.command.use:
+    description: Allows use of the /ts command
+    default: true
+
+  mcts.command.who:
+    description: List linked players online in TeamSpeak
+    default: true
+
+  mcts.command.link:
+    description: Link your Minecraft account to a TeamSpeak UID
+    default: true
+
+  mcts.command.unlink:
+    description: Remove your Minecraft↔TeamSpeak link
+    default: true
+
+  mcts.admin.status:
+    description: Show TeamSpeak ServerQuery connection status
+    default: op
+
+  mcts.admin.reload:
+    description: Reload the plugin configuration and reconnect to TeamSpeak
+    default: op
+
+  mcts.admin.link:
+    description: Link another player's Minecraft account to a TeamSpeak display name
+    default: op

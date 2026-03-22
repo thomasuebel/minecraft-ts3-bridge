@@ -1,0 +1,29 @@
+# Release artifacts
+release/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Compiled output
+*.class
+*.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Plugin runtime files (never commit live server credentials or player data)
+plugins/MinecraftTS/config.json
+plugins/MinecraftTS/mappings.json
