@@ -1,5 +1,8 @@
 # TS3Bridge
 
+[![CI](https://github.com/thomasuebel/minecraft-ts3-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/thomasuebel/minecraft-ts3-bridge/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/thomasuebel/minecraft-ts3-bridge/branch/master/graph/badge.svg)](https://codecov.io/gh/thomasuebel/minecraft-ts3-bridge)
+
 My kids play Minecraft and wanted to talk to each other while doing so. I prefer TeamSpeak to Discord - self-hosted, no big tech, no accounts required for voice. The existing plugins (TeamspeakIP, BukkitSpeak) didn't work with the virtual server setup I have through 4netplayers hosting, so I built this one. Hope someone finds it useful.
 
 ---

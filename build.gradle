@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'com.gradleup.shadow' version '8.3.6'
+    id 'jacoco'
 }
 
 group = 'de.thomasuebel.mc.ts3bridge'
@@ -38,6 +39,14 @@ processResources {
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+    }
 }
 
 shadowJar {
