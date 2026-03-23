@@ -56,8 +56,8 @@ class TeamspeakServiceTest {
     }
 
     @Test
-    void sendChannelMessageDelegatesToGateway() {
-        service.sendChannelMessage("Hello from Minecraft!");
+    void sendServerMessageDelegatesToGateway() {
+        service.sendServerMessage("Hello from Minecraft!");
 
         verify(gateway).sendServerMessage("Hello from Minecraft!");
     }

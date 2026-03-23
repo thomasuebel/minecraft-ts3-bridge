@@ -39,7 +39,7 @@ public class TeamspeakService {
      * Sends a message to the TeamSpeak virtual server (visible in all channels).
      * Used for the MC→TS chat bridge.
      */
-    public void sendChannelMessage(String message) {
+    public void sendServerMessage(String message) {
         gateway.sendServerMessage(message);
     }
 }
