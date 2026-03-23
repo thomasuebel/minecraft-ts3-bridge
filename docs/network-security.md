@@ -36,7 +36,7 @@ Many managed TS3 hosts do not expose the ServerQuery port externally, or do not 
 
 The `tsQueryPassword` in `config.yml` is stored in plain text. Ensure:
 
-- `config.yml` is **not committed to version control** (add it to `.gitignore`).
+- `config.yml` is **not committed to version control** — the `.gitignore` already excludes `plugins/TS3Bridge/config.yml`.
 - File permissions restrict read access to the server process user only.
 - The ServerQuery account is a **dedicated account with minimal permissions**, not the `serveradmin` account.
 
@@ -45,7 +45,7 @@ The `tsQueryPassword` in `config.yml` is stored in plain text. Ensure:
 Rather than using `serveradmin`, create a dedicated ServerQuery account:
 
 1. Log into the TS3 server as `serveradmin`.
-2. Create a new ServerQuery login: `servergroupaddperm sgid=... permid=...` (or use the TS3 web UI if available).
+2. Create a new ServerQuery login: `serverqueryadd client_login_name=ts3bridge client_login_password=yourpassword` (or use the TS3 web UI if available).
 3. The plugin requires these permissions at minimum:
    - `b_serverinstance_info_view`
    - `b_virtualserver_select`

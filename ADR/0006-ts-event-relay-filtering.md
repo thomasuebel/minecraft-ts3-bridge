@@ -33,12 +33,12 @@ This event also does not carry `client_nickname`, and the client has already dis
 
 **Nickname resolution:**
 - `onClientJoin`: use `e.get("client_nickname")` (raw map access); populate nickname cache.
-- `onClientMoved`: call `teamspeakConnection.getApi().getClientInfo(e.getInt("clid"))` for name and query-client check; populate nickname cache.
+- `onClientMoved`: call `gateway.getClientInfo(clid)` (via `TeamspeakGateway`) for name and query-client check; populate nickname cache.
 - `onClientLeave`: retrieve and remove name from nickname cache; skip if absent.
 
 ## Consequences
 
 - Channel mode relay works correctly regardless of what the TS3 server puts in the `target` field.
 - Join/leave display names are always resolved, eliminating the `[TS]  joined` empty-name bug.
-- The nickname cache introduces a small amount of in-memory state scoped to the lifetime of the TS event listener registration (i.e. reset on `/ts reload`).
+- The nickname cache is a field on `TsToMcBridge` and is reset when a new instance is constructed on each `initialize()` call (i.e. on startup and `/ts reload`).
 - Private TS messages are never leaked to Minecraft chat, regardless of mode.

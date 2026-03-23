@@ -16,7 +16,7 @@ A Minecraft plugin bridging Minecraft chat and player presence with a TeamSpeak 
 |---|---|
 | `io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT` | Paper plugin API (compileOnly) |
 | `com.github.theholywaffle:teamspeak3-api:1.3.0` | HolyWaffle TS3 ServerQuery client |
-| `com.google.code.gson:gson:2.10.1` | JSON config serialisation |
+| `com.google.code.gson:gson:2.10.1` | JSON serialisation for `mappings.json` |
 | `org.junit.jupiter:junit-jupiter:5.10.2` | Unit testing |
 | `org.mockito:mockito-core:5.15.2` | Mocking (interfaces/Bukkit types only — see ADR-0008) |
 
@@ -26,7 +26,7 @@ Base: `de.thomasuebel.mc.ts3bridge`
 
 ```
 ├── configuration/   — PluginConfig, ConfigManager, file bootstrapping
-├── teamspeak/       — TeamspeakGateway, TeamspeakConnection, TeamspeakService, TsClient
+├── teamspeak/       — TeamspeakGateway, TeamspeakConnection, TeamspeakService, TsClient, TsToMcBridge
 ├── user/            — UserLinkService, MappingsRepository, LinkResult, UnlinkResult
 ├── chat/            — ChatBridgeService (bidirectional relay logic)
 └── minecraft/       — MctsPlugin, AdvertisementService
@@ -34,12 +34,13 @@ Base: `de.thomasuebel.mc.ts3bridge`
     └── listener/        MinecraftChatListener, PlayerJoinListener, PlayerQuitListener
 ```
 
-## Configuration (`config.json`)
+## Configuration (`config.yml`)
 
 | Field | Default | Description |
 |---|---|---|
 | `tsHost` | `localhost` | TS server hostname |
 | `tsQueryPort` | `10011` | ServerQuery TCP port |
+| `tsQueryProtocol` | `RAW` | `RAW` (plain TCP) or `SSH` (encrypted, port 10022) |
 | `tsQueryUsername` | *(empty)* | ServerQuery login |
 | `tsQueryPassword` | *(empty)* | ServerQuery password |
 | `tsVirtualServerId` | `1` | Virtual server ID |
@@ -49,7 +50,8 @@ Base: `de.thomasuebel.mc.ts3bridge`
 | `tsBridgeChannelId` | `0` | Bridge channel ID; 0 = server-wide |
 | `advertisementMessage` | `Join our TeamSpeak server: {address}` | Join message template |
 | `chatBridgeEnabled` | `true` | Enable MC↔TS chat relay |
-| `debugLogging` | `false` | Log raw TS event payloads at INFO |
+| `tsReconnectEnabled` | `true` | Reconnect automatically after a connection drop |
+| `debugLogging` | `false` | Log raw TS event payloads at FINE level |
 
 ## Commands
 
@@ -61,13 +63,14 @@ Base: `de.thomasuebel.mc.ts3bridge`
 | `/ts link <ts-name>` | `mcts.command.link` | Self-link by TS display name |
 | `/ts link <mc-player> <ts-name>` | `mcts.admin.link` | Admin link |
 | `/ts unlink` | `mcts.command.unlink` | Remove MC↔TS link |
+| `/ts unlink <mc-player>` | `mcts.admin.unlink` | Admin unlink |
 | `/ts reload` | `mcts.admin.reload` | Reload config and reconnect |
 
 Future extension points (not implemented): `/ts msg`, `/ts channel`
 
 ## Permissions
 
-LuckPerms nodes; vanilla OP as fallback. Admin commands (`status`, `reload`, `link <mc-player> <ts-name>`) require OP fallback.
+LuckPerms nodes; vanilla OP as fallback. Admin commands (`status`, `reload`, `link <mc-player> <ts-name>`, `unlink <mc-player>`) require OP fallback.
 
 ## Plugin Metadata
 
