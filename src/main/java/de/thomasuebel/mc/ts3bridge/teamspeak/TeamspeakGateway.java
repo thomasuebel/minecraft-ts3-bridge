@@ -1,6 +1,7 @@
 package de.thomasuebel.mc.ts3bridge.teamspeak;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Abstraction over the TeamSpeak 3 ServerQuery connection.
@@ -29,4 +30,12 @@ public interface TeamspeakGateway {
      * Sends a message to the channel the ServerQuery client is currently in.
      */
     void sendChannelMessage(String message);
+
+    void registerAllEvents();
+
+    String getSelfUniqueId();
+
+    Optional<TsClient> getClientInfo(int clid);
+
+    void registerBridge(TsToMcBridge bridge);
 }

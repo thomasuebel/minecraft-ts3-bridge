@@ -10,6 +10,7 @@ import de.thomasuebel.mc.ts3bridge.configuration.PluginConfig;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -135,9 +136,67 @@ public class TeamspeakConnection implements TeamspeakGateway {
         }
     }
 
-    /** Exposes the raw API for registering ServerQuery event listeners (TS→MC bridge). */
-    public TS3Api getApi() {
-        return api;
+    @Override
+    public void registerAllEvents() {
+        if (!connected || api == null) return;
+        api.registerAllEvents();
+    }
+
+    @Override
+    public String getSelfUniqueId() {
+        if (!connected || api == null) return "";
+        return api.whoAmI().getUniqueIdentifier();
+    }
+
+    @Override
+    public Optional<TsClient> getClientInfo(int clid) {
+        if (!connected || api == null) return Optional.empty();
+        try {
+            com.github.theholywaffle.teamspeak3.api.wrapper.Client info = api.getClientInfo(clid);
+            if (info == null || info.isServerQueryClient()) return Optional.empty();
+            return Optional.of(new TsClient(info.getUniqueIdentifier(), info.getNickname()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public void registerBridge(TsToMcBridge bridge) {
+        if (!connected || api == null) return;
+        api.addTS3Listeners(new com.github.theholywaffle.teamspeak3.api.event.TS3EventAdapter() {
+
+            @Override
+            public void onTextMessage(com.github.theholywaffle.teamspeak3.api.event.TextMessageEvent e) {
+                String targetStr = e.get("target");
+                int targetId = (targetStr != null && !targetStr.isEmpty()) ? Integer.parseInt(targetStr) : 0;
+                bridge.handleTextMessage(
+                        e.getInvokerUniqueId(),
+                        Integer.parseInt(e.get("targetmode")),
+                        targetId,
+                        e.getInvokerName(),
+                        e.getMessage());
+            }
+
+            @Override
+            public void onClientJoin(com.github.theholywaffle.teamspeak3.api.event.ClientJoinEvent e) {
+                bridge.handleClientJoin(
+                        e.getClientType(),
+                        e.getUniqueClientIdentifier(),
+                        e.getInt("clid"),
+                        e.get("client_nickname"),
+                        e.getClientTargetId());
+            }
+
+            @Override
+            public void onClientLeave(com.github.theholywaffle.teamspeak3.api.event.ClientLeaveEvent e) {
+                bridge.handleClientLeave(e.getInt("clid"), e.getClientFromId());
+            }
+
+            @Override
+            public void onClientMoved(com.github.theholywaffle.teamspeak3.api.event.ClientMovedEvent e) {
+                bridge.handleClientMoved(e.getInt("clid"), e.getInt("cfid"), e.getTargetChannelId());
+            }
+        });
     }
 
     @Override
