@@ -40,6 +40,7 @@ public class PlayerJoinListener implements Listener {
         }
 
         player.sendMessage(Component.text(advertisementService.buildAdvertisementMessage()));
+        advertisementService.markAdvertised(player.getUniqueId());
         logger.info("Sent TeamSpeak advertisement to player '" + player.getName() + "'.");
     }
 }

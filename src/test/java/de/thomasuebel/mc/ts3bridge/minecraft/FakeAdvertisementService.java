@@ -27,4 +27,9 @@ public class FakeAdvertisementService extends AdvertisementService {
     public String buildAdvertisementMessage() {
         return "Join our TeamSpeak server: ts.example.com";
     }
+
+    @Override
+    public void markAdvertised(UUID playerUuid) {
+        // no-op in test double
+    }
 }

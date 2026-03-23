@@ -60,4 +60,25 @@ class AdvertisementServiceTest {
 
         assertFalse(service.shouldAdvertise(uuid));
     }
+
+    @Test
+    void advertisementIsShownOnFirstVisit() {
+        UUID uuid = UUID.randomUUID();
+        assertTrue(service.shouldAdvertise(uuid));
+    }
+
+    @Test
+    void advertisementIsSuppressedAfterMarkAdvertised() {
+        UUID uuid = UUID.randomUUID();
+        service.markAdvertised(uuid);
+        assertFalse(service.shouldAdvertise(uuid));
+    }
+
+    @Test
+    void advertisementIsShownAgainAfterServiceReinit() {
+        UUID uuid = UUID.randomUUID();
+        service.markAdvertised(uuid);
+        AdvertisementService freshService = new AdvertisementService(config, repository);
+        assertTrue(freshService.shouldAdvertise(uuid));
+    }
 }
