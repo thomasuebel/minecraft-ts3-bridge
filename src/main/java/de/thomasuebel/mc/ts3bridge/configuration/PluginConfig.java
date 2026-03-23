@@ -4,6 +4,9 @@ public class PluginConfig {
 
     private String tsHost = "localhost";
     private int tsQueryPort = 10011;
+    // Connection protocol: "RAW" (plain TCP, port 10011) or "SSH" (encrypted, port 10022).
+    // Use SSH when the Minecraft server and TS3 server are on different hosts.
+    private String tsQueryProtocol = "RAW";
     private String tsQueryUsername = "";
     private String tsQueryPassword = "";
     private int tsVirtualServerId = 1;
@@ -28,6 +31,9 @@ public class PluginConfig {
 
     public int getTsQueryPort() { return tsQueryPort; }
     public void setTsQueryPort(int tsQueryPort) { this.tsQueryPort = tsQueryPort; }
+
+    public String getTsQueryProtocol() { return tsQueryProtocol; }
+    public void setTsQueryProtocol(String tsQueryProtocol) { this.tsQueryProtocol = tsQueryProtocol; }
 
     public String getTsQueryUsername() { return tsQueryUsername; }
     public void setTsQueryUsername(String tsQueryUsername) { this.tsQueryUsername = tsQueryUsername; }

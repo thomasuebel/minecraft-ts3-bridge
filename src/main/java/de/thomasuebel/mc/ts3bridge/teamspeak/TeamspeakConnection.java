@@ -44,6 +44,20 @@ public class TeamspeakConnection implements TeamspeakGateway {
             ts3Config.setQueryPort(config.getTsQueryPort());
             ts3Config.setFloodRate(TS3Query.FloodRate.DEFAULT);
 
+            if ("SSH".equalsIgnoreCase(config.getTsQueryProtocol())) {
+                ts3Config.setProtocol(TS3Query.Protocol.SSH);
+                logger.info("Using SSH ServerQuery protocol (encrypted). "
+                        + "Ensure your TS3 server has SSH ServerQuery enabled (default port 10022).");
+                if (config.getTsQueryPort() == 10011) {
+                    logger.warning("tsQueryPort is set to 10011 (the default RAW port). "
+                            + "SSH ServerQuery typically uses port 10022. "
+                            + "Update tsQueryPort in config.json if your server uses the default SSH port.");
+                }
+            } else {
+                logger.info("Using RAW ServerQuery protocol (plain TCP). "
+                        + "Set tsQueryProtocol=SSH in config.json for encrypted transport.");
+            }
+
             if (config.isTsReconnectEnabled()) {
                 ts3Config.setReconnectStrategy(ReconnectStrategy.exponentialBackoff());
                 ts3Config.setConnectionHandler(new ConnectionHandler() {
@@ -148,6 +162,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
                     "Failed to connect to TeamSpeak ServerQuery. Check the following fields in config.json: "
                             + "tsHost ('" + config.getTsHost() + "'), "
                             + "tsQueryPort (" + config.getTsQueryPort() + "), "
+                            + "tsQueryProtocol ('" + config.getTsQueryProtocol() + "'), "
                             + "tsQueryUsername ('" + config.getTsQueryUsername() + "'), "
                             + "tsQueryPassword, "
                             + "tsVirtualServerId (" + config.getTsVirtualServerId() + "), "
