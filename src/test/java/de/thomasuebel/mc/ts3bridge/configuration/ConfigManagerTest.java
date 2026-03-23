@@ -90,4 +90,16 @@ class ConfigManagerTest {
         assertEquals(10022, manager.getConfig().getTsQueryPort());
         assertEquals("SSH", manager.getConfig().getTsQueryProtocol());
     }
+
+    @Test
+    void fallsBackToDefaultsWhenYamlIsInvalid() throws IOException {
+        // Write structurally invalid YAML that will cause a parse error
+        Files.writeString(tempDir.resolve("config.yml"), "tsHost: [unclosed");
+
+        ConfigManager manager = new ConfigManager(tempDir, LOGGER);
+        manager.load();
+
+        // ConfigManager must survive the parse error and return a usable default config
+        assertEquals("localhost", manager.getConfig().getTsHost());
+    }
 }
