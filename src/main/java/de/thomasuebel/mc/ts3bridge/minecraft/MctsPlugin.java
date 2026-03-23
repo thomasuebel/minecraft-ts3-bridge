@@ -169,18 +169,18 @@ public class MctsPlugin extends JavaPlugin {
                         public void onTextMessage(
                                 com.github.theholywaffle.teamspeak3.api.event.TextMessageEvent e) {
                             try {
-                                if (debugLogging) getLogger().info("[TS Bridge] onTextMessage fired — raw event: "
+                                if (debugLogging) getLogger().fine("[TS Bridge] onTextMessage fired — raw event: "
                                         + e);
                                 if (e.getInvokerUniqueId().equals(selfUid)) return;
                                 int targetMode = Integer.parseInt(e.get("targetmode"));
                                 String targetStr = e.get("target");
                                 int targetId = (targetStr != null && !targetStr.isEmpty())
                                         ? Integer.parseInt(targetStr) : 0;
-                                if (debugLogging) getLogger().info("[TS Bridge] targetMode=" + targetMode
+                                if (debugLogging) getLogger().fine("[TS Bridge] targetMode=" + targetMode
                                         + " targetId=" + targetId + " channelId config="
                                         + chatBridgeService.getChannelId());
                                 if (!chatBridgeService.shouldRelayFromTeamspeak(targetMode, targetId)) {
-                                    if (debugLogging) getLogger().info("[TS Bridge] Message filtered by shouldRelayFromTeamspeak.");
+                                    if (debugLogging) getLogger().fine("[TS Bridge] Message filtered by shouldRelayFromTeamspeak.");
                                     return;
                                 }
                                 String formatted = chatBridgeService.formatTeamspeakMessage(
@@ -196,7 +196,7 @@ public class MctsPlugin extends JavaPlugin {
                         public void onClientJoin(
                                 com.github.theholywaffle.teamspeak3.api.event.ClientJoinEvent e) {
                             try {
-                                if (debugLogging) getLogger().info("[TS Bridge] onClientJoin fired — raw event: "
+                                if (debugLogging) getLogger().fine("[TS Bridge] onClientJoin fired — raw event: "
                                         + e);
                                 if (e.getClientType() == 1) return;
                                 if (selfUid.equals(e.getUniqueClientIdentifier())) return;
@@ -214,7 +214,7 @@ public class MctsPlugin extends JavaPlugin {
                         public void onClientLeave(
                                 com.github.theholywaffle.teamspeak3.api.event.ClientLeaveEvent e) {
                             try {
-                                if (debugLogging) getLogger().info("[TS Bridge] onClientLeave fired — raw event: "
+                                if (debugLogging) getLogger().fine("[TS Bridge] onClientLeave fired — raw event: "
                                         + e);
                                 // notifyclientleftview does not include client_nickname or client_type;
                                 // use the nickname cache (populated on join/move). Unknown clients
@@ -234,7 +234,7 @@ public class MctsPlugin extends JavaPlugin {
                         public void onClientMoved(
                                 com.github.theholywaffle.teamspeak3.api.event.ClientMovedEvent e) {
                             try {
-                                if (debugLogging) getLogger().info("[TS Bridge] onClientMoved fired — raw event: "
+                                if (debugLogging) getLogger().fine("[TS Bridge] onClientMoved fired — raw event: "
                                         + e);
                                 // notifyclientmoved does not include client_type or client_nickname;
                                 // fetch client info from ServerQuery to filter query clients and get
