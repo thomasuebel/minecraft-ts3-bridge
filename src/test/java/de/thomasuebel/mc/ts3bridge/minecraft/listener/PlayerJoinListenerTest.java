@@ -3,6 +3,7 @@ package de.thomasuebel.mc.ts3bridge.minecraft.listener;
 import de.thomasuebel.mc.ts3bridge.chat.ChatBridgeService;
 import de.thomasuebel.mc.ts3bridge.minecraft.FakeAdvertisementService;
 import de.thomasuebel.mc.ts3bridge.teamspeak.FakeTeamspeakGateway;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,5 +61,27 @@ class PlayerJoinListenerTest {
         listener.onPlayerJoin(event);
 
         assertTrue(gateway.getSentMessages().isEmpty());
+    }
+
+    @Test
+    void advertisementIsSentToPlayerWhenShouldAdvertise() {
+        advertisementService.setShouldAdvertise(true);
+        var listener = new PlayerJoinListener(advertisementService, chatBridgeService, false, LOGGER);
+        var event = new PlayerJoinEvent(player, (Component) null);
+
+        listener.onPlayerJoin(event);
+
+        verify(player).sendMessage(Component.text("Join our TeamSpeak server: ts.example.com"));
+    }
+
+    @Test
+    void advertisementIsSkippedWhenPlayerIsLinked() {
+        // shouldAdvertise=false simulates a linked player (already set in setUp)
+        var listener = new PlayerJoinListener(advertisementService, chatBridgeService, false, LOGGER);
+        var event = new PlayerJoinEvent(player, (Component) null);
+
+        listener.onPlayerJoin(event);
+
+        verify(player, never()).sendMessage(any(Component.class));
     }
 }
