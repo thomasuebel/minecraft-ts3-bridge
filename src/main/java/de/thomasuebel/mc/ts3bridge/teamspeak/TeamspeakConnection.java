@@ -4,6 +4,8 @@ import com.github.theholywaffle.teamspeak3.TS3Api;
 import com.github.theholywaffle.teamspeak3.TS3Config;
 import com.github.theholywaffle.teamspeak3.TS3Query;
 import com.github.theholywaffle.teamspeak3.api.exception.TS3CommandFailedException;
+import com.github.theholywaffle.teamspeak3.api.reconnect.ConnectionHandler;
+import com.github.theholywaffle.teamspeak3.api.reconnect.ReconnectStrategy;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Channel;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import de.thomasuebel.mc.ts3bridge.configuration.PluginConfig;
@@ -18,6 +20,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
 
     private final PluginConfig config;
     private final Logger logger;
+    private Runnable onReconnect;
 
     private TS3Query query;
     private TS3Api api;
@@ -28,6 +31,10 @@ public class TeamspeakConnection implements TeamspeakGateway {
         this.logger = logger;
     }
 
+    public void setReconnectCallback(Runnable callback) {
+        this.onReconnect = callback;
+    }
+
     public void connect() {
         logger.info("Connecting to TeamSpeak ServerQuery at "
                 + config.getTsHost() + ":" + config.getTsQueryPort() + "...");
@@ -36,6 +43,53 @@ public class TeamspeakConnection implements TeamspeakGateway {
             ts3Config.setHost(config.getTsHost());
             ts3Config.setQueryPort(config.getTsQueryPort());
             ts3Config.setFloodRate(TS3Query.FloodRate.DEFAULT);
+
+            if (config.isTsReconnectEnabled()) {
+                ts3Config.setReconnectStrategy(ReconnectStrategy.exponentialBackoff());
+                ts3Config.setConnectionHandler(new ConnectionHandler() {
+                    @Override
+                    public void onConnect(TS3Api reconnectedApi) {
+                        logger.info("TeamSpeak connection (re)established. Re-initialising post-connect setup...");
+                        api = reconnectedApi;
+                        try {
+                            api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+                            if (config.getTsVirtualServerPort() > 0) {
+                                api.selectVirtualServerByPort(config.getTsVirtualServerPort());
+                            } else {
+                                api.selectVirtualServerById(config.getTsVirtualServerId());
+                            }
+                            connected = true;
+                            try {
+                                api.setNickname(config.getTsQueryNickname());
+                            } catch (TS3CommandFailedException e) {
+                                if (e.getError().getId() != 513) {
+                                    logger.log(Level.WARNING, "Could not set nickname on reconnect.", e);
+                                }
+                            }
+                            if (config.getTsBridgeChannelId() > 0) {
+                                try {
+                                    api.moveClient(api.whoAmI().getId(), config.getTsBridgeChannelId());
+                                } catch (Exception moveEx) {
+                                    logger.log(Level.WARNING, "Could not move to bridge channel on reconnect.", moveEx);
+                                }
+                            }
+                            if (onReconnect != null) {
+                                onReconnect.run();
+                            }
+                        } catch (Exception e) {
+                            logger.log(Level.SEVERE, "Failed to complete post-reconnect setup.", e);
+                            connected = false;
+                        }
+                    }
+
+                    @Override
+                    public void onDisconnect(TS3Query disconnectedQuery) {
+                        connected = false;
+                        logger.warning("TeamSpeak connection lost — will reconnect automatically with exponential backoff. "
+                                + "Use /ts status to check connection state, or /ts reload to force reconnect.");
+                    }
+                });
+            }
 
             query = new TS3Query(ts3Config);
             query.connect();

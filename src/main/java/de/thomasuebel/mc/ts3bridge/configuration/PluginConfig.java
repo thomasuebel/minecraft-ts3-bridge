@@ -18,6 +18,8 @@ public class PluginConfig {
     private String tsQueryNickname = "TS3Bridge";
     // Channel ID for the chat bridge. 0 = no channel filter (server-wide messages).
     private int tsBridgeChannelId = 0;
+    // When true, the plugin will attempt to reconnect automatically after a connection drop.
+    private boolean tsReconnectEnabled = true;
     // When true, raw TS event map contents are logged at INFO for debugging.
     private boolean debugLogging = false;
 
@@ -53,6 +55,9 @@ public class PluginConfig {
 
     public int getTsBridgeChannelId() { return tsBridgeChannelId; }
     public void setTsBridgeChannelId(int tsBridgeChannelId) { this.tsBridgeChannelId = tsBridgeChannelId; }
+
+    public boolean isTsReconnectEnabled() { return tsReconnectEnabled; }
+    public void setTsReconnectEnabled(boolean tsReconnectEnabled) { this.tsReconnectEnabled = tsReconnectEnabled; }
 
     public boolean isDebugLogging() { return debugLogging; }
     public void setDebugLogging(boolean debugLogging) { this.debugLogging = debugLogging; }

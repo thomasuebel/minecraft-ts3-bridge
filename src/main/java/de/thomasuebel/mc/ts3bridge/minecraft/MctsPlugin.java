@@ -144,12 +144,13 @@ public class MctsPlugin extends JavaPlugin {
         getLogger().info("Registered player quit listener.");
 
         // --- TS→MC chat bridge ---
+        TsToMcBridge tsToMcBridge = new TsToMcBridge(
+                teamspeakConnection, chatBridgeService,
+                config.isDebugLogging(), getLogger(),
+                msg -> getServer().getScheduler().runTask(this,
+                        () -> getServer().broadcast(net.kyori.adventure.text.Component.text(msg))));
+        teamspeakConnection.setReconnectCallback(tsToMcBridge::register);
         if (teamspeakService.isConnected()) {
-            TsToMcBridge tsToMcBridge = new TsToMcBridge(
-                    teamspeakConnection, chatBridgeService,
-                    config.isDebugLogging(), getLogger(),
-                    msg -> getServer().getScheduler().runTask(this,
-                            () -> getServer().broadcast(net.kyori.adventure.text.Component.text(msg))));
             tsToMcBridge.register();
         } else {
             getLogger().warning("TS→MC chat bridge not registered — not connected to TeamSpeak.");
