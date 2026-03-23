@@ -1,15 +1,11 @@
 package de.thomasuebel.mc.ts3bridge.configuration;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +13,6 @@ import java.util.logging.Logger;
 public class ConfigManager {
 
     private static final String CONFIG_YML = "config.yml";
-    private static final String CONFIG_JSON = "config.json";
     private static final String MAPPINGS_FILE = "mappings.json";
 
     private final Path dataFolder;
@@ -30,7 +25,6 @@ public class ConfigManager {
     }
 
     public void load() {
-        migrateJsonToYamlIfNeeded();
         loadConfig();
         bootstrapMappings();
     }
@@ -41,30 +35,6 @@ public class ConfigManager {
 
     public PluginConfig getConfig() {
         return config;
-    }
-
-    private void migrateJsonToYamlIfNeeded() {
-        Path ymlPath = dataFolder.resolve(CONFIG_YML);
-        Path jsonPath = dataFolder.resolve(CONFIG_JSON);
-
-        if (Files.exists(ymlPath) || !Files.exists(jsonPath)) {
-            return;
-        }
-
-        logger.info("Migrating config.json to config.yml...");
-        try (Reader reader = Files.newBufferedReader(jsonPath)) {
-            Gson gson = new GsonBuilder().create();
-            PluginConfig migrated = gson.fromJson(reader, PluginConfig.class);
-            if (migrated == null) migrated = new PluginConfig();
-            config = migrated;
-            saveConfig();
-            Files.move(jsonPath, dataFolder.resolve(CONFIG_JSON + ".bak"), StandardCopyOption.REPLACE_EXISTING);
-            logger.info("Migration complete. config.json has been renamed to config.json.bak. "
-                    + "Review config.yml and remove config.json.bak when satisfied.");
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Could not migrate config.json — will use defaults. "
-                    + "Your old config.json has not been modified.", e);
-        }
     }
 
     private void loadConfig() {
