@@ -340,4 +340,196 @@ class TsCommandTest {
 
         assertFalse(mappingsRepository.isLinked(uuid));
     }
+
+    // --- /ts (no args) ---
+
+    @Test
+    void noArgsPrintsAdvertisementAndUsage() {
+        tsCommand.onCommand(sender, null, "ts", new String[]{});
+
+        verify(sender).sendMessage("Join our TeamSpeak!");
+        verify(sender).sendMessage(contains("Usage:"));
+    }
+
+    // --- unknown subcommand ---
+
+    @Test
+    void unknownSubcommandPrintsHelpMessage() {
+        tsCommand.onCommand(sender, null, "ts", new String[]{"doesnotexist"});
+
+        verify(sender).sendMessage(contains("Unknown subcommand"));
+    }
+
+    // --- /ts who ---
+
+    @Test
+    void whoIsBlockedWithoutPermission() {
+        tsCommand.onCommand(sender, null, "ts", new String[]{"who"});
+
+        verify(sender).sendMessage("You don't have permission to use this command.");
+    }
+
+    @Test
+    void whoReportsNobodyOnlineWhenTsIsEmpty() {
+        when(sender.hasPermission("mcts.command.who")).thenReturn(true);
+        // no clients added
+
+        tsCommand.onCommand(sender, null, "ts", new String[]{"who"});
+
+        verify(sender).sendMessage(contains("Nobody is online"));
+    }
+
+    @Test
+    void whoReportsNotConnectedWhenDisconnected() {
+        gateway.setConnected(false);
+        when(sender.hasPermission("mcts.command.who")).thenReturn(true);
+
+        tsCommand.onCommand(sender, null, "ts", new String[]{"who"});
+
+        verify(sender).sendMessage(contains("Not connected"));
+    }
+
+    // --- /ts status ---
+
+    @Test
+    void statusIsBlockedWithoutPermission() {
+        tsCommand.onCommand(sender, null, "ts", new String[]{"status"});
+
+        verify(sender).sendMessage("You don't have permission to use this command.");
+    }
+
+    // --- /ts link self-link edge cases ---
+
+    @Test
+    void selfLinkFromNonPlayerSenderPrintsError() {
+        tsCommand.onCommand(sender, null, "ts", new String[]{"link", "SomeTsName"});
+
+        verify(sender).sendMessage(contains("Only players"));
+    }
+
+    @Test
+    void selfLinkWithMissingTsNamePrintsUsage() {
+        when(player.hasPermission("mcts.command.link")).thenReturn(true);
+
+        tsCommand.onCommand(player, null, "ts", new String[]{"link"});
+
+        verify(player).sendMessage(contains("Usage:"));
+    }
+
+    @Test
+    void selfLinkWhenTsDisconnectedPrintsError() {
+        gateway.setConnected(false);
+        when(player.hasPermission("mcts.command.link")).thenReturn(true);
+
+        tsCommand.onCommand(player, null, "ts", new String[]{"link", "SomeTs"});
+
+        verify(player).sendMessage(contains("unavailable"));
+    }
+
+    @Test
+    void selfLinkAlreadyLinkedPrintsHint() {
+        UUID uuid = UUID.randomUUID();
+        when(player.getUniqueId()).thenReturn(uuid);
+        when(player.hasPermission("mcts.command.link")).thenReturn(true);
+        gateway.addOnlineClient("uid-ts", "MyTs");
+        mappingsRepository.link(uuid, "uid-ts");   // pre-link
+
+        tsCommand.onCommand(player, null, "ts", new String[]{"link", "MyTs"});
+
+        verify(player).sendMessage(contains("already linked"));
+    }
+
+    // --- /ts link admin-link edge cases ---
+
+    @Test
+    void adminLinkWhenTsDisconnectedPrintsError() {
+        gateway.setConnected(false);
+        when(sender.hasPermission("mcts.admin.link")).thenReturn(true);
+        TsCommand cmd = new TsCommand(
+                teamspeakService, userLinkService, mappingsRepository,
+                () -> {}, uuid -> "x", name -> Optional.of(targetPlayer), name -> Optional.empty(), () -> "", new PluginConfig()
+        );
+
+        cmd.onCommand(sender, null, "ts", new String[]{"link", "OnlineMC", "SomeTs"});
+
+        verify(sender).sendMessage(contains("unavailable"));
+    }
+
+    @Test
+    void adminLinkAmbiguousTsNamePrintsMatches() {
+        when(sender.hasPermission("mcts.admin.link")).thenReturn(true);
+        gateway.addOnlineClient("uid-1", "Steve");
+        gateway.addOnlineClient("uid-2", "steve");
+        TsCommand cmd = new TsCommand(
+                teamspeakService, userLinkService, mappingsRepository,
+                () -> {}, uuid -> "x", name -> Optional.of(targetPlayer), name -> Optional.empty(), () -> "", new PluginConfig()
+        );
+
+        cmd.onCommand(sender, null, "ts", new String[]{"link", "OnlineMC", "Steve"});
+
+        verify(sender).sendMessage(contains("Multiple"));
+    }
+
+    // --- /ts unlink ---
+
+    @Test
+    void selfUnlinkFromNonPlayerSenderPrintsError() {
+        tsCommand.onCommand(sender, null, "ts", new String[]{"unlink"});
+
+        verify(sender).sendMessage(contains("Only players"));
+    }
+
+    @Test
+    void selfUnlinkWithoutPermissionPrintsError() {
+        tsCommand.onCommand(player, null, "ts", new String[]{"unlink"});
+
+        verify(player).sendMessage("You don't have permission to use this command.");
+    }
+
+    @Test
+    void selfUnlinkWhenNotLinkedPrintsMessage() {
+        UUID uuid = UUID.randomUUID();
+        when(player.getUniqueId()).thenReturn(uuid);
+        when(player.hasPermission("mcts.command.unlink")).thenReturn(true);
+
+        tsCommand.onCommand(player, null, "ts", new String[]{"unlink"});
+
+        verify(player).sendMessage(contains("don't have a linked"));
+    }
+
+    @Test
+    void adminUnlinkNotLinkedPlayerPrintsMessage() {
+        UUID uuid = UUID.randomUUID();
+        when(sender.hasPermission("mcts.admin.unlink")).thenReturn(true);
+        TsCommand cmd = new TsCommand(
+                teamspeakService, userLinkService, mappingsRepository,
+                () -> {}, uuid2 -> "x", name -> Optional.empty(),
+                name -> "unlinked".equals(name) ? Optional.of(uuid) : Optional.empty(),
+                () -> "", new PluginConfig()
+        );
+
+        cmd.onCommand(sender, null, "ts", new String[]{"unlink", "unlinked"});
+
+        verify(sender).sendMessage(contains("does not have a linked"));
+    }
+
+    // --- tab completion ---
+
+    @Test
+    void tabCompletionFiltersSubcommandsByPrefix() {
+        var completions = tsCommand.onTabComplete(sender, null, "ts", new String[]{"s"});
+
+        assertNotNull(completions);
+        assertTrue(completions.contains("status"));
+        assertFalse(completions.contains("who"));
+    }
+
+    @Test
+    void tabCompletionForUnlinkWithAdminPermissionReturnsEmptyList() {
+        when(sender.hasPermission("mcts.admin.unlink")).thenReturn(true);
+        var completions = tsCommand.onTabComplete(sender, null, "ts", new String[]{"unlink", ""});
+
+        assertNotNull(completions);
+        assertTrue(completions.isEmpty());
+    }
 }
