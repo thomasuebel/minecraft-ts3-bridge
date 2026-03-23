@@ -135,4 +135,38 @@ class TsToMcBridgeTest {
         assertEquals(1, channelBroadcasts.size());
         assertEquals("[TS] Eve joined", channelBroadcasts.get(0));
     }
+
+    @Test
+    void clientMovedOutOfBridgeChannelRelaysLeft() {
+        // Channel mode: bridge channel = 10. Client moves FROM 10 TO 99 → "[TS] Frank left"
+        ChatBridgeService channelBridge = new ChatBridgeService(gateway, 10);
+        List<String> channelBroadcasts = new ArrayList<>();
+        TsToMcBridge channelTsBridge = new TsToMcBridge(gateway, channelBridge, false, LOGGER, channelBroadcasts::add);
+        gateway.addClientInfo(55, "uid-frank", "Frank");
+        channelTsBridge.register();
+
+        gateway.simulateClientMoved(55, 10, 99);
+
+        assertEquals(1, channelBroadcasts.size());
+        assertEquals("[TS] Frank left", channelBroadcasts.get(0));
+    }
+
+    @Test
+    void debugLoggingBranchDoesNotAlterRelay() {
+        // With debugLogging=true the bridge should still relay messages correctly
+        TsToMcBridge debugBridge = new TsToMcBridge(gateway, chatBridgeService, true, LOGGER, broadcasts::add);
+        debugBridge.register();
+
+        gateway.simulateTextMessage("other-uid", 3, 0, "Bob", "debug message");
+        gateway.simulateClientJoin(0, "join-uid", 11, "Carol", 0);
+        gateway.simulateClientLeave(11, 0);
+        gateway.addClientInfo(22, "move-uid", "Dave");
+        gateway.simulateClientMoved(22, 0, 0);
+
+        assertEquals(4, broadcasts.size());
+        assertEquals("[TS] Bob: debug message", broadcasts.get(0));
+        assertEquals("[TS] Carol joined", broadcasts.get(1));
+        assertEquals("[TS] Carol left", broadcasts.get(2));
+        assertEquals("[TS] Dave joined", broadcasts.get(3));
+    }
 }
