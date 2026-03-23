@@ -59,6 +59,7 @@ class TsCommandTest {
                 () -> reloadCalled.set(true),
                 uuid -> "MCPlayer_" + uuid.toString().substring(0, 4),
                 name -> Optional.empty(),
+                name -> Optional.empty(),
                 () -> "Join our TeamSpeak!",
                 new PluginConfig()
         );
@@ -138,7 +139,7 @@ class TsCommandTest {
         channelConfig.setTsBridgeChannelId(42);
         TsCommand cmd = new TsCommand(
                 teamspeakService, userLinkService, mappingsRepository,
-                () -> {}, uuid -> "x", name -> Optional.empty(), () -> "", channelConfig
+                () -> {}, uuid -> "x", name -> Optional.empty(), name -> Optional.empty(), () -> "", channelConfig
         );
 
         cmd.onCommand(sender, null, "ts", new String[]{"status"});
@@ -153,7 +154,7 @@ class TsCommandTest {
         portConfig.setTsVirtualServerPort(10006);
         TsCommand cmd = new TsCommand(
                 teamspeakService, userLinkService, mappingsRepository,
-                () -> {}, uuid -> "x", name -> Optional.empty(), () -> "", portConfig
+                () -> {}, uuid -> "x", name -> Optional.empty(), name -> Optional.empty(), () -> "", portConfig
         );
 
         cmd.onCommand(sender, null, "ts", new String[]{"status"});
@@ -247,7 +248,7 @@ class TsCommandTest {
 
         TsCommand cmd = new TsCommand(
                 teamspeakService, userLinkService, mappingsRepository,
-                () -> {}, uuid -> "x", name -> Optional.of(targetPlayer), () -> "", new PluginConfig()
+                () -> {}, uuid -> "x", name -> Optional.of(targetPlayer), name -> Optional.empty(), () -> "", new PluginConfig()
         );
 
         cmd.onCommand(sender, null, "ts", new String[]{"link", "TargetMC", "TheirTsName"});
@@ -281,7 +282,7 @@ class TsCommandTest {
         // onlinePlayerFinder returns targetPlayer, but TS lookup fails first — getName/getUniqueId not needed
         TsCommand cmd = new TsCommand(
                 teamspeakService, userLinkService, mappingsRepository,
-                () -> {}, uuid -> "x", name -> Optional.of(targetPlayer), () -> "", new PluginConfig()
+                () -> {}, uuid -> "x", name -> Optional.of(targetPlayer), name -> Optional.empty(), () -> "", new PluginConfig()
         );
         // no TS clients added — nobody online in TS
 
@@ -289,5 +290,54 @@ class TsCommandTest {
 
         verify(sender).sendMessage(contains("NoTsMatch"));
         verify(sender).sendMessage(contains("online"));
+    }
+
+    // --- /ts unlink <player> (admin unlink) ---
+
+    @Test
+    void adminUnlinkSucceedsForLinkedPlayer() {
+        UUID uuid = UUID.randomUUID();
+        mappingsRepository.link(uuid, "ts-uid-xyz");
+
+        TsCommand cmd = new TsCommand(
+                teamspeakService, userLinkService, mappingsRepository,
+                () -> reloadCalled.set(true),
+                u -> "MCPlayer",
+                name -> Optional.empty(),
+                name -> "admin-target".equals(name) ? Optional.of(uuid) : Optional.empty(),
+                () -> "Join TeamSpeak!",
+                new PluginConfig()
+        );
+
+        when(sender.hasPermission("mcts.admin.unlink")).thenReturn(true);
+        cmd.onCommand(sender, null, "ts", new String[]{"unlink", "admin-target"});
+
+        assertFalse(mappingsRepository.isLinked(uuid));
+        verify(sender).sendMessage(contains("Removed TeamSpeak link for admin-target"));
+    }
+
+    @Test
+    void adminUnlinkFailsForUnknownPlayer() {
+        when(sender.hasPermission("mcts.admin.unlink")).thenReturn(true);
+        tsCommand.onCommand(sender, null, "ts", new String[]{"unlink", "nobody"});
+        verify(sender).sendMessage(contains("not found"));
+    }
+
+    @Test
+    void adminUnlinkFailsWithoutPermission() {
+        tsCommand.onCommand(sender, null, "ts", new String[]{"unlink", "someone"});
+        verify(sender).sendMessage(contains("don't have permission"));
+    }
+
+    @Test
+    void selfUnlinkStillWorksAfterAdminUnlinkAdded() {
+        UUID uuid = UUID.randomUUID();
+        mappingsRepository.link(uuid, "ts-uid-abc");
+        when(player.getUniqueId()).thenReturn(uuid);
+        when(player.hasPermission("mcts.command.unlink")).thenReturn(true);
+
+        tsCommand.onCommand(player, null, "ts", new String[]{"unlink"});
+
+        assertFalse(mappingsRepository.isLinked(uuid));
     }
 }

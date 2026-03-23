@@ -30,6 +30,7 @@ public class TsCommand implements CommandExecutor, TabCompleter {
     private final Runnable reloadCallback;
     private final Function<UUID, String> playerNameResolver;
     private final Function<String, Optional<Player>> onlinePlayerFinder;
+    private final Function<String, Optional<UUID>> offlinePlayerUuidResolver;
     private final Supplier<String> advertisementMessageSupplier;
     private final PluginConfig config;
 
@@ -39,6 +40,7 @@ public class TsCommand implements CommandExecutor, TabCompleter {
                      Runnable reloadCallback,
                      Function<UUID, String> playerNameResolver,
                      Function<String, Optional<Player>> onlinePlayerFinder,
+                     Function<String, Optional<UUID>> offlinePlayerUuidResolver,
                      Supplier<String> advertisementMessageSupplier,
                      PluginConfig config) {
         this.teamspeakService = teamspeakService;
@@ -47,6 +49,7 @@ public class TsCommand implements CommandExecutor, TabCompleter {
         this.reloadCallback = reloadCallback;
         this.playerNameResolver = playerNameResolver;
         this.onlinePlayerFinder = onlinePlayerFinder;
+        this.offlinePlayerUuidResolver = offlinePlayerUuidResolver;
         this.advertisementMessageSupplier = advertisementMessageSupplier;
         this.config = config;
     }
@@ -66,7 +69,7 @@ public class TsCommand implements CommandExecutor, TabCompleter {
             case "who" -> handleWho(sender);
             case "status" -> handleStatus(sender);
             case "link" -> handleLink(sender, args);
-            case "unlink" -> handleUnlink(sender);
+            case "unlink" -> handleUnlink(sender, args);
             case "reload" -> handleReload(sender);
             default -> {
                 sender.sendMessage("Unknown subcommand. Usage: /ts <who|status|link|unlink|reload>");
@@ -234,7 +237,15 @@ public class TsCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    private boolean handleUnlink(CommandSender sender) {
+    private boolean handleUnlink(CommandSender sender, String[] args) {
+        if (args.length == 2) {
+            if (!hasPermission(sender, "mcts.admin.unlink")) {
+                sender.sendMessage("You don't have permission to use this command.");
+                return true;
+            }
+            return handleAdminUnlink(sender, args[1]);
+        }
+
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players can unlink accounts.");
             return true;
@@ -248,6 +259,24 @@ public class TsCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(switch (result) {
             case SUCCESS -> "[TS] Your TeamSpeak link has been removed.";
             case NOT_LINKED -> "[TS] You don't have a linked TeamSpeak account.";
+        });
+        return true;
+    }
+
+    private boolean handleAdminUnlink(CommandSender sender, String mcPlayerName) {
+        Optional<UUID> uuid = offlinePlayerUuidResolver.apply(mcPlayerName);
+        if (uuid.isEmpty()) {
+            sender.sendMessage("[TS] Player '" + mcPlayerName + "' not found.");
+            return true;
+        }
+        if (!mappingsRepository.isLinked(uuid.get())) {
+            sender.sendMessage("[TS] " + mcPlayerName + " does not have a linked TeamSpeak account.");
+            return true;
+        }
+        UnlinkResult result = userLinkService.unlink(uuid.get());
+        sender.sendMessage(switch (result) {
+            case SUCCESS -> "[TS] Removed TeamSpeak link for " + mcPlayerName + ".";
+            case NOT_LINKED -> "[TS] " + mcPlayerName + " does not have a linked TeamSpeak account.";
         });
         return true;
     }
@@ -275,6 +304,9 @@ public class TsCommand implements CommandExecutor, TabCompleter {
             return List.of("who", "status", "link", "unlink", "reload").stream()
                     .filter(sub -> sub.startsWith(args[0].toLowerCase()))
                     .toList();
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("unlink") && hasPermission(sender, "mcts.admin.unlink")) {
+            return List.of();
         }
         return List.of();
     }

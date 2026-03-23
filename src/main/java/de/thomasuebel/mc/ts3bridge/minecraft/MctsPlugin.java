@@ -104,6 +104,12 @@ public class MctsPlugin extends JavaPlugin {
                     return name != null ? name : uuid.toString();
                 },
                 name -> java.util.Optional.ofNullable(getServer().getPlayerExact(name)),
+                name -> java.util.Optional.ofNullable(getServer().getPlayerExact(name))
+                        .map(p -> (java.util.UUID) p.getUniqueId())
+                        .or(() -> {
+                            org.bukkit.OfflinePlayer op = getServer().getOfflinePlayerIfCached(name);
+                            return op != null && op.hasPlayedBefore() ? java.util.Optional.of(op.getUniqueId()) : java.util.Optional.empty();
+                        }),
                 advertisementService::buildAdvertisementMessage,
                 config
         );

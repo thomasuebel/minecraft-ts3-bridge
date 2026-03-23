@@ -39,3 +39,7 @@ permissions:
   mcts.admin.link:
     description: Link another player's Minecraft account to a TeamSpeak display name
     default: op
+
+  mcts.admin.unlink:
+    description: Remove another player's Minecraft↔TeamSpeak link
+    default: op
