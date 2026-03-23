@@ -51,11 +51,11 @@ public class TeamspeakConnection implements TeamspeakGateway {
                 if (config.getTsQueryPort() == 10011) {
                     logger.warning("tsQueryPort is set to 10011 (the default RAW port). "
                             + "SSH ServerQuery typically uses port 10022. "
-                            + "Update tsQueryPort in config.json if your server uses the default SSH port.");
+                            + "Update tsQueryPort in config.yml if your server uses the default SSH port.");
                 }
             } else {
                 logger.info("Using RAW ServerQuery protocol (plain TCP). "
-                        + "Set tsQueryProtocol=SSH in config.json for encrypted transport.");
+                        + "Set tsQueryProtocol=SSH in config.yml for encrypted transport.");
             }
 
             if (config.isTsReconnectEnabled()) {
@@ -150,7 +150,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
                     logger.log(Level.WARNING,
                             "Failed to move ServerQuery client to channel " + config.getTsBridgeChannelId()
                                     + " — the channel ID may be wrong. "
-                                    + "Set tsBridgeChannelId=0 in config.json for server-wide mode. "
+                                    + "Set tsBridgeChannelId=0 in config.yml for server-wide mode. "
                                     + "Use /ts reload after correcting the value.",
                             moveEx);
                     logAvailableChannels();
@@ -159,7 +159,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
         } catch (Exception e) {
             connected = false;
             logger.log(Level.SEVERE,
-                    "Failed to connect to TeamSpeak ServerQuery. Check the following fields in config.json: "
+                    "Failed to connect to TeamSpeak ServerQuery. Check the following fields in config.yml: "
                             + "tsHost ('" + config.getTsHost() + "'), "
                             + "tsQueryPort (" + config.getTsQueryPort() + "), "
                             + "tsQueryProtocol ('" + config.getTsQueryProtocol() + "'), "

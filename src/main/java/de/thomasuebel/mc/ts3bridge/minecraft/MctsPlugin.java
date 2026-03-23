@@ -85,7 +85,7 @@ public class MctsPlugin extends JavaPlugin {
         if (!teamspeakService.isConnected()) {
             getLogger().warning("Plugin is running without a TeamSpeak connection. "
                     + "Commands and chat bridge will be unavailable until the connection is restored. "
-                    + "Fix config.json and use /ts reload to retry.");
+                    + "Fix config.yml and use /ts reload to retry.");
         }
 
         // --- Services ---
@@ -131,7 +131,7 @@ public class MctsPlugin extends JavaPlugin {
             getLogger().info("Chat bridge is ENABLED — Minecraft chat will be relayed to TeamSpeak.");
         } else {
             pluginManager.registerEvents(new MinecraftChatListener(chatBridgeService, false), this);
-            getLogger().info("Chat bridge is DISABLED (set chatBridgeEnabled=true in config.json to enable).");
+            getLogger().info("Chat bridge is DISABLED (set chatBridgeEnabled=true in config.yml to enable).");
         }
 
         pluginManager.registerEvents(
