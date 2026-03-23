@@ -47,6 +47,15 @@ jacocoTestReport {
     reports {
         xml.required = true
     }
+    // MctsPlugin is framework wiring (JavaPlugin lifecycle); testable only via integration tests.
+    // TeamspeakConnection wraps the HolyWaffle TS3 client; it requires a live ServerQuery port.
+    // Both are excluded from coverage metrics to avoid deflating the reported percentage.
+    classDirectories.setFrom(
+        fileTree(dir: layout.buildDirectory.dir('classes/java/main').get().asFile, excludes: [
+            'de/thomasuebel/mc/ts3bridge/minecraft/MctsPlugin.class',
+            'de/thomasuebel/mc/ts3bridge/teamspeak/TeamspeakConnection.class'
+        ])
+    )
 }
 
 shadowJar {
