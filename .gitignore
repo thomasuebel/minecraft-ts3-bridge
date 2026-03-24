@@ -30,3 +30,4 @@ out/
 # Plugin runtime files (never commit live server credentials or player data)
 plugins/TS3Bridge/config.yml
 plugins/TS3Bridge/mappings.json
+plugins/TS3Bridge/config.json
