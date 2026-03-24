@@ -35,17 +35,38 @@ public class TeamspeakConnection implements TeamspeakGateway {
         this.onReconnect = callback;
     }
 
+    record ConnectionSetup(TS3Query.Protocol protocol, boolean embedCredentials, String username, String password) {
+        static ConnectionSetup from(PluginConfig config) {
+            boolean ssh = "SSH".equalsIgnoreCase(config.getTsQueryProtocol());
+            return new ConnectionSetup(
+                    ssh ? TS3Query.Protocol.SSH : TS3Query.Protocol.RAW,
+                    ssh,
+                    config.getTsQueryUsername(),
+                    config.getTsQueryPassword());
+        }
+    }
+
+    static TS3Config buildTs3Config(PluginConfig config, ConnectionSetup setup) {
+        TS3Config ts3Config = new TS3Config();
+        ts3Config.setHost(config.getTsHost());
+        ts3Config.setQueryPort(config.getTsQueryPort());
+        ts3Config.setFloodRate(TS3Query.FloodRate.DEFAULT);
+        ts3Config.setProtocol(setup.protocol());
+        if (setup.embedCredentials()) {
+            ts3Config.setLoginCredentials(setup.username(), setup.password());
+        }
+        return ts3Config;
+    }
+
     public void connect() {
         logger.info("Connecting to TeamSpeak ServerQuery at "
                 + config.getTsHost() + ":" + config.getTsQueryPort() + "...");
         try {
-            TS3Config ts3Config = new TS3Config();
-            ts3Config.setHost(config.getTsHost());
-            ts3Config.setQueryPort(config.getTsQueryPort());
-            ts3Config.setFloodRate(TS3Query.FloodRate.DEFAULT);
+            ConnectionSetup setup = ConnectionSetup.from(config);
+            boolean useSsh = setup.embedCredentials();
+            TS3Config ts3Config = buildTs3Config(config, setup);
 
-            if ("SSH".equalsIgnoreCase(config.getTsQueryProtocol())) {
-                ts3Config.setProtocol(TS3Query.Protocol.SSH);
+            if (useSsh) {
                 logger.info("Using SSH ServerQuery protocol (encrypted). "
                         + "Ensure your TS3 server has SSH ServerQuery enabled (default port 10022).");
                 if (config.getTsQueryPort() == 10011) {
@@ -66,7 +87,9 @@ public class TeamspeakConnection implements TeamspeakGateway {
                         logger.info("TeamSpeak connection (re)established. Re-initialising post-connect setup...");
                         api = reconnectedApi;
                         try {
-                            api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+                            if (!useSsh) {
+                                api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+                            }
                             if (config.getTsVirtualServerPort() > 0) {
                                 api.selectVirtualServerByPort(config.getTsVirtualServerPort());
                             } else {
@@ -110,8 +133,12 @@ public class TeamspeakConnection implements TeamspeakGateway {
 
             api = query.getApi();
 
-            logger.info("TCP connection established. Logging in as '" + config.getTsQueryUsername() + "'...");
-            api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+            if (!useSsh) {
+                logger.info("TCP connection established. Logging in as '" + config.getTsQueryUsername() + "'...");
+                api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+            } else {
+                logger.info("SSH connection established as '" + config.getTsQueryUsername() + "'.");
+            }
 
             if (config.getTsVirtualServerPort() > 0) {
                 logger.info("Login successful. Selecting virtual server by voice port " + config.getTsVirtualServerPort() + "...");
