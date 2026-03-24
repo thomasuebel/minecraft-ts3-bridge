@@ -5,7 +5,22 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — 1.1.4-SNAPSHOT
+## 1.1.5
+
+### Documentation
+- Added "Tested with" section to Modrinth description (EN + DE) — Paper 1.21.11 / Java 25 / Geyser-Spigot 2.9.5-SNAPSHOT / floodgate 2.2.5-SNAPSHOT, 4netplayers-hosted TS and self-hosted TS via [teamspeak3-and-ts3-manager](https://github.com/thomasuebel/teamspeak3-and-ts3-manager)
+- Added release checklist to CLAUDE.md
+- Added GitHub and PayPal funding options
+
+---
+
+## 1.1.4
+
+### Bug Fixes
+- Fix `TS3QueryShutDownException` race condition during reconnect window — gateway methods now catch the exception instead of propagating it while the connection is re-establishing
+- Use `query.getApi()` for runtime calls instead of storing the API reference from the reconnect handler, eliminating stale-reference errors after reconnect
+- Move `connected = true` assignment to after full reconnect setup completes; relax setup-method guards to not treat in-progress reconnect as a double-connect
+- Do not set `connected = false` in `TS3QueryShutDownException` catch blocks — the reconnect handler already manages the connected state
 
 ---
 
