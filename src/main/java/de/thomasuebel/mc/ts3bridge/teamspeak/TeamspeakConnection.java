@@ -4,6 +4,7 @@ import com.github.theholywaffle.teamspeak3.TS3Api;
 import com.github.theholywaffle.teamspeak3.TS3Config;
 import com.github.theholywaffle.teamspeak3.TS3Query;
 import com.github.theholywaffle.teamspeak3.api.exception.TS3CommandFailedException;
+import com.github.theholywaffle.teamspeak3.api.exception.TS3QueryShutDownException;
 import com.github.theholywaffle.teamspeak3.api.reconnect.ConnectionHandler;
 import com.github.theholywaffle.teamspeak3.api.reconnect.ReconnectStrategy;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Channel;
@@ -25,8 +26,8 @@ public class TeamspeakConnection implements TeamspeakGateway {
     private Runnable onReconnect;
 
     private TS3Query query;
-    private TS3Api api;
-    private boolean connected = false;
+    private volatile TS3Api api;
+    private volatile boolean connected = false;
 
     public TeamspeakConnection(PluginConfig config, Logger logger) {
         this.config = config;
@@ -101,7 +102,6 @@ public class TeamspeakConnection implements TeamspeakGateway {
                             } else {
                                 api.selectVirtualServerById(config.getTsVirtualServerId());
                             }
-                            connected = true;
                             try {
                                 api.setNickname(config.getTsQueryNickname());
                             } catch (TS3CommandFailedException e) {
@@ -121,6 +121,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
                             if (onReconnect != null) {
                                 onReconnect.run();
                             }
+                            connected = true;
                         } catch (Exception e) {
                             logger.log(Level.SEVERE, "Failed to complete post-reconnect setup.", e);
                             connected = false;
@@ -249,21 +250,25 @@ public class TeamspeakConnection implements TeamspeakGateway {
 
     @Override
     public void registerAllEvents() {
-        if (!connected || api == null) return;
+        if (api == null) return;
         api.registerAllEvents();
     }
 
     @Override
     public String getSelfUniqueId() {
-        if (!connected || api == null) return "";
-        return api.whoAmI().getUniqueIdentifier();
+        if (api == null) return "";
+        try {
+            return api.whoAmI().getUniqueIdentifier();
+        } catch (TS3QueryShutDownException e) {
+            return "";
+        }
     }
 
     @Override
     public Optional<TsClient> getClientInfo(int clid) {
-        if (!connected || api == null) return Optional.empty();
+        if (!connected || query == null) return Optional.empty();
         try {
-            com.github.theholywaffle.teamspeak3.api.wrapper.Client info = api.getClientInfo(clid);
+            com.github.theholywaffle.teamspeak3.api.wrapper.Client info = query.getApi().getClientInfo(clid);
             if (info == null || info.isServerQueryClient()) return Optional.empty();
             return Optional.of(new TsClient(info.getUniqueIdentifier(), info.getNickname()));
         } catch (Exception e) {
@@ -273,7 +278,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
 
     @Override
     public void registerBridge(TsToMcBridge bridge) {
-        if (!connected || api == null) return;
+        if (api == null) return;
         api.addTS3Listeners(new com.github.theholywaffle.teamspeak3.api.event.TS3EventAdapter() {
 
             @Override
@@ -320,10 +325,14 @@ public class TeamspeakConnection implements TeamspeakGateway {
         if (!connected) {
             return Collections.emptyList();
         }
-        return api.getClients().stream()
-                .filter(client -> !client.isServerQueryClient())
-                .map(Client::getUniqueIdentifier)
-                .toList();
+        try {
+            return query.getApi().getClients().stream()
+                    .filter(client -> !client.isServerQueryClient())
+                    .map(Client::getUniqueIdentifier)
+                    .toList();
+        } catch (TS3QueryShutDownException e) {
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -331,10 +340,14 @@ public class TeamspeakConnection implements TeamspeakGateway {
         if (!connected) {
             return Collections.emptyList();
         }
-        return api.getClients().stream()
-                .filter(client -> !client.isServerQueryClient())
-                .map(client -> new TsClient(client.getUniqueIdentifier(), client.getNickname()))
-                .toList();
+        try {
+            return query.getApi().getClients().stream()
+                    .filter(client -> !client.isServerQueryClient())
+                    .map(client -> new TsClient(client.getUniqueIdentifier(), client.getNickname()))
+                    .toList();
+        } catch (TS3QueryShutDownException e) {
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -342,7 +355,11 @@ public class TeamspeakConnection implements TeamspeakGateway {
         if (!connected) {
             return;
         }
-        api.sendServerMessage(message);
+        try {
+            query.getApi().sendServerMessage(message);
+        } catch (TS3QueryShutDownException e) {
+            // no-op; onDisconnect manages connected state
+        }
     }
 
     @Override
@@ -350,6 +367,10 @@ public class TeamspeakConnection implements TeamspeakGateway {
         if (!connected) {
             return;
         }
-        api.sendChannelMessage(message);
+        try {
+            query.getApi().sendChannelMessage(message);
+        } catch (TS3QueryShutDownException e) {
+            // no-op; onDisconnect manages connected state
+        }
     }
 }
