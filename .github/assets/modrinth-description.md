@@ -24,6 +24,14 @@ TeamspeakIP and BukkitSpeak couldn't connect to a hosted 4netplayers TeamSpeak s
 
 **Requirements:** Paper 1.21.1+, TeamSpeak 3 server with ServerQuery enabled
 
+**Tested with**
+
+This plugin has been tested on a private server running:
+- **Paper 1.21.11** (build 127) with **Java 25** (OpenJDK 64-Bit Server VM 25.0.2)
+- **Geyser-Spigot 2.9.5-SNAPSHOT** and **floodgate 2.2.5-SNAPSHOT** alongside TS3Bridge
+- A **4netplayers-hosted** TeamSpeak 3 server
+- A **self-hosted** TeamSpeak 3 server running via the [teamspeak3-and-ts3-manager](https://github.com/thomasuebel/teamspeak3-and-ts3-manager) Docker project
+
 ---
 
 ## Deutsch
@@ -47,3 +55,11 @@ TeamspeakIP and BukkitSpeak couldn't connect to a hosted 4netplayers TeamSpeak s
 TeamspeakIP und BukkitSpeak ließen sich mit einem gehosteten 4netplayers-TeamSpeak-Server nicht ohne Weiteres verbinden, und BukkitSpeak wurde schon länger nicht mehr gepflegt. TS3Bridge wurde gezielt für gehostete Anbieter und aktuelle Paper-Versionen entwickelt.
 
 **Voraussetzungen:** Paper 1.21.1+, TeamSpeak 3-Server mit aktiviertem ServerQuery
+
+**Getestet mit**
+
+Dieses Plugin wurde auf einem privaten Server getestet mit:
+- **Paper 1.21.11** (Build 127) und **Java 25** (OpenJDK 64-Bit Server VM 25.0.2)
+- **Geyser-Spigot 2.9.5-SNAPSHOT** und **floodgate 2.2.5-SNAPSHOT** neben TS3Bridge
+- Einem **4netplayers-gehosteten** TeamSpeak 3-Server
+- Einem **selbst gehosteten** TeamSpeak 3-Server, betrieben über das Docker-Projekt [teamspeak3-and-ts3-manager](https://github.com/thomasuebel/teamspeak3-and-ts3-manager)
