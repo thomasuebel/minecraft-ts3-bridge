@@ -1,8 +1,12 @@
 package de.thomasuebel.mc.ts3bridge.teamspeak;
 
 import com.github.theholywaffle.teamspeak3.TS3Query;
+import com.github.theholywaffle.teamspeak3.api.exception.TS3CommandFailedException;
+import com.github.theholywaffle.teamspeak3.api.wrapper.QueryError;
 import de.thomasuebel.mc.ts3bridge.configuration.PluginConfig;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -81,5 +85,27 @@ class TeamspeakConnectionTest {
 
         assertEquals(TS3Query.Protocol.RAW, setup.protocol());
         assertFalse(setup.embedCredentials());
+    }
+
+    // --- isAlreadyInChannelError tests ---
+
+    @Test
+    void isAlreadyInChannelErrorReturnsTrueFor770() {
+        assertTrue(TeamspeakConnection.isAlreadyInChannelError(makeCommandFailedException(770)));
+    }
+
+    @Test
+    void isAlreadyInChannelErrorReturnsFalseForOtherTs3ErrorCodes() {
+        assertFalse(TeamspeakConnection.isAlreadyInChannelError(makeCommandFailedException(768)));
+    }
+
+    @Test
+    void isAlreadyInChannelErrorReturnsFalseForNonTs3Exceptions() {
+        assertFalse(TeamspeakConnection.isAlreadyInChannelError(new RuntimeException("network error")));
+    }
+
+    private static TS3CommandFailedException makeCommandFailedException(int errorId) {
+        QueryError error = new QueryError(Map.of("id", String.valueOf(errorId), "msg", "error"));
+        return new TS3CommandFailedException(error, "clientmove");
     }
 }

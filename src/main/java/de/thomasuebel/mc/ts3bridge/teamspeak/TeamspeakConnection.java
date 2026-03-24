@@ -46,6 +46,10 @@ public class TeamspeakConnection implements TeamspeakGateway {
         }
     }
 
+    static boolean isAlreadyInChannelError(Exception e) {
+        return e instanceof TS3CommandFailedException tcfe && tcfe.getError().getId() == 770;
+    }
+
     static TS3Config buildTs3Config(PluginConfig config, ConnectionSetup setup) {
         TS3Config ts3Config = new TS3Config();
         ts3Config.setHost(config.getTsHost());
@@ -107,7 +111,9 @@ public class TeamspeakConnection implements TeamspeakGateway {
                                 try {
                                     api.moveClient(api.whoAmI().getId(), config.getTsBridgeChannelId());
                                 } catch (Exception moveEx) {
-                                    logger.log(Level.WARNING, "Could not move to bridge channel on reconnect.", moveEx);
+                                    if (!isAlreadyInChannelError(moveEx)) {
+                                        logger.log(Level.WARNING, "Could not move to bridge channel on reconnect.", moveEx);
+                                    }
                                 }
                             }
                             if (onReconnect != null) {
@@ -174,13 +180,20 @@ public class TeamspeakConnection implements TeamspeakGateway {
                     api.moveClient(api.whoAmI().getId(), config.getTsBridgeChannelId());
                     logger.info("Moved to bridge channel " + config.getTsBridgeChannelId() + ".");
                 } catch (Exception moveEx) {
-                    logger.log(Level.WARNING,
-                            "Failed to move ServerQuery client to channel " + config.getTsBridgeChannelId()
-                                    + " — the channel ID may be wrong. "
-                                    + "Set tsBridgeChannelId=0 in config.yml for server-wide mode. "
-                                    + "Use /ts reload after correcting the value.",
-                            moveEx);
-                    logAvailableChannels();
+                    if (isAlreadyInChannelError(moveEx)) {
+                        // TS3 error 770 = already member of channel.
+                        // The onConnect handler (running concurrently) moved the client first.
+                        logger.info("ServerQuery client is already in bridge channel "
+                                + config.getTsBridgeChannelId() + ".");
+                    } else {
+                        logger.log(Level.WARNING,
+                                "Failed to move ServerQuery client to channel " + config.getTsBridgeChannelId()
+                                        + " — the channel ID may be wrong. "
+                                        + "Set tsBridgeChannelId=0 in config.yml for server-wide mode. "
+                                        + "Use /ts reload after correcting the value.",
+                                moveEx);
+                        logAvailableChannels();
+                    }
                 }
             }
         } catch (Exception e) {
