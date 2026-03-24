@@ -266,9 +266,9 @@ public class TeamspeakConnection implements TeamspeakGateway {
 
     @Override
     public Optional<TsClient> getClientInfo(int clid) {
-        if (!connected || api == null) return Optional.empty();
+        if (!connected || query == null) return Optional.empty();
         try {
-            com.github.theholywaffle.teamspeak3.api.wrapper.Client info = api.getClientInfo(clid);
+            com.github.theholywaffle.teamspeak3.api.wrapper.Client info = query.getApi().getClientInfo(clid);
             if (info == null || info.isServerQueryClient()) return Optional.empty();
             return Optional.of(new TsClient(info.getUniqueIdentifier(), info.getNickname()));
         } catch (Exception e) {
@@ -326,7 +326,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
             return Collections.emptyList();
         }
         try {
-            return api.getClients().stream()
+            return query.getApi().getClients().stream()
                     .filter(client -> !client.isServerQueryClient())
                     .map(Client::getUniqueIdentifier)
                     .toList();
@@ -341,7 +341,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
             return Collections.emptyList();
         }
         try {
-            return api.getClients().stream()
+            return query.getApi().getClients().stream()
                     .filter(client -> !client.isServerQueryClient())
                     .map(client -> new TsClient(client.getUniqueIdentifier(), client.getNickname()))
                     .toList();
@@ -356,7 +356,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
             return;
         }
         try {
-            api.sendServerMessage(message);
+            query.getApi().sendServerMessage(message);
         } catch (TS3QueryShutDownException e) {
             // no-op; onDisconnect manages connected state
         }
@@ -368,7 +368,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
             return;
         }
         try {
-            api.sendChannelMessage(message);
+            query.getApi().sendChannelMessage(message);
         } catch (TS3QueryShutDownException e) {
             // no-op; onDisconnect manages connected state
         }
