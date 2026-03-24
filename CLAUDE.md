@@ -80,6 +80,21 @@ LuckPerms nodes; vanilla OP as fallback. Admin commands (`status`, `reload`, `li
 
 ---
 
+## Release Checklist
+
+Follow these steps in order when cutting a release. **Never skip the changelog step.**
+
+1. **Update `CHANGELOG.md`** — move all entries from `[Unreleased]` into a new versioned section (e.g. `## 1.1.5`). The `[Unreleased]` section must be empty (or removed) before the version is bumped. A release with an empty or snapshot-labelled changelog section is a defect.
+2. **Bump version** in `build.gradle` — remove the `-SNAPSHOT` suffix.
+3. **Run tests** — `./gradlew test`. Do not proceed if any test fails.
+4. **Build** — `./gradlew shadowJar`.
+5. **Commit** the version bump (and changelog update if not already committed).
+6. **Tag** — `git tag v<version>` and push with `--tags`.
+7. **Create GitHub release** — attach the shadow jar from `build/libs/`.
+8. **Bump to next snapshot** — set version to `<next>-SNAPSHOT` in `build.gradle` and commit.
+
+---
+
 ## Architecture Decisions
 
 All significant decisions are recorded in [`ADR/`](ADR/):
