@@ -260,7 +260,6 @@ public class TeamspeakConnection implements TeamspeakGateway {
         try {
             return api.whoAmI().getUniqueIdentifier();
         } catch (TS3QueryShutDownException e) {
-            connected = false;
             return "";
         }
     }
@@ -332,7 +331,6 @@ public class TeamspeakConnection implements TeamspeakGateway {
                     .map(Client::getUniqueIdentifier)
                     .toList();
         } catch (TS3QueryShutDownException e) {
-            connected = false;
             return Collections.emptyList();
         }
     }
@@ -348,7 +346,6 @@ public class TeamspeakConnection implements TeamspeakGateway {
                     .map(client -> new TsClient(client.getUniqueIdentifier(), client.getNickname()))
                     .toList();
         } catch (TS3QueryShutDownException e) {
-            connected = false;
             return Collections.emptyList();
         }
     }
@@ -361,7 +358,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
         try {
             api.sendServerMessage(message);
         } catch (TS3QueryShutDownException e) {
-            connected = false;
+            // no-op; onDisconnect manages connected state
         }
     }
 
@@ -373,7 +370,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
         try {
             api.sendChannelMessage(message);
         } catch (TS3QueryShutDownException e) {
-            connected = false;
+            // no-op; onDisconnect manages connected state
         }
     }
 }
