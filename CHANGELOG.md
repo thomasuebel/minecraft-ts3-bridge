@@ -5,6 +5,10 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased] — 1.1.4-SNAPSHOT
+
+---
+
 ## 1.1.3
 
 ### Iteration 28 — Fix SSH ServerQuery authentication
