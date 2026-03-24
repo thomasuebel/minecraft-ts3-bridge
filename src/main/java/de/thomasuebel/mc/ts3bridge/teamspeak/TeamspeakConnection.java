@@ -37,17 +37,42 @@ public class TeamspeakConnection implements TeamspeakGateway {
         this.onReconnect = callback;
     }
 
+    record ConnectionSetup(TS3Query.Protocol protocol, boolean embedCredentials, String username, String password) {
+        static ConnectionSetup from(PluginConfig config) {
+            boolean ssh = "SSH".equalsIgnoreCase(config.getTsQueryProtocol());
+            return new ConnectionSetup(
+                    ssh ? TS3Query.Protocol.SSH : TS3Query.Protocol.RAW,
+                    ssh,
+                    config.getTsQueryUsername(),
+                    config.getTsQueryPassword());
+        }
+    }
+
+    static boolean isAlreadyInChannelError(Exception e) {
+        return e instanceof TS3CommandFailedException tcfe && tcfe.getError().getId() == 770;
+    }
+
+    static TS3Config buildTs3Config(PluginConfig config, ConnectionSetup setup) {
+        TS3Config ts3Config = new TS3Config();
+        ts3Config.setHost(config.getTsHost());
+        ts3Config.setQueryPort(config.getTsQueryPort());
+        ts3Config.setFloodRate(TS3Query.FloodRate.DEFAULT);
+        ts3Config.setProtocol(setup.protocol());
+        if (setup.embedCredentials()) {
+            ts3Config.setLoginCredentials(setup.username(), setup.password());
+        }
+        return ts3Config;
+    }
+
     public void connect() {
         logger.info("Connecting to TeamSpeak ServerQuery at "
                 + config.getTsHost() + ":" + config.getTsQueryPort() + "...");
         try {
-            TS3Config ts3Config = new TS3Config();
-            ts3Config.setHost(config.getTsHost());
-            ts3Config.setQueryPort(config.getTsQueryPort());
-            ts3Config.setFloodRate(TS3Query.FloodRate.DEFAULT);
+            ConnectionSetup setup = ConnectionSetup.from(config);
+            boolean useSsh = setup.embedCredentials();
+            TS3Config ts3Config = buildTs3Config(config, setup);
 
-            if ("SSH".equalsIgnoreCase(config.getTsQueryProtocol())) {
-                ts3Config.setProtocol(TS3Query.Protocol.SSH);
+            if (useSsh) {
                 logger.info("Using SSH ServerQuery protocol (encrypted). "
                         + "Ensure your TS3 server has SSH ServerQuery enabled (default port 10022).");
                 if (config.getTsQueryPort() == 10011) {
@@ -68,7 +93,9 @@ public class TeamspeakConnection implements TeamspeakGateway {
                         logger.info("TeamSpeak connection (re)established. Re-initialising post-connect setup...");
                         api = reconnectedApi;
                         try {
-                            api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+                            if (!useSsh) {
+                                api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+                            }
                             if (config.getTsVirtualServerPort() > 0) {
                                 api.selectVirtualServerByPort(config.getTsVirtualServerPort());
                             } else {
@@ -86,7 +113,9 @@ public class TeamspeakConnection implements TeamspeakGateway {
                                 try {
                                     api.moveClient(api.whoAmI().getId(), config.getTsBridgeChannelId());
                                 } catch (Exception moveEx) {
-                                    logger.log(Level.WARNING, "Could not move to bridge channel on reconnect.", moveEx);
+                                    if (!isAlreadyInChannelError(moveEx)) {
+                                        logger.log(Level.WARNING, "Could not move to bridge channel on reconnect.", moveEx);
+                                    }
                                 }
                             }
                             if (onReconnect != null) {
@@ -112,8 +141,12 @@ public class TeamspeakConnection implements TeamspeakGateway {
 
             api = query.getApi();
 
-            logger.info("TCP connection established. Logging in as '" + config.getTsQueryUsername() + "'...");
-            api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+            if (!useSsh) {
+                logger.info("TCP connection established. Logging in as '" + config.getTsQueryUsername() + "'...");
+                api.login(config.getTsQueryUsername(), config.getTsQueryPassword());
+            } else {
+                logger.info("SSH connection established as '" + config.getTsQueryUsername() + "'.");
+            }
 
             if (config.getTsVirtualServerPort() > 0) {
                 logger.info("Login successful. Selecting virtual server by voice port " + config.getTsVirtualServerPort() + "...");
@@ -149,13 +182,20 @@ public class TeamspeakConnection implements TeamspeakGateway {
                     api.moveClient(api.whoAmI().getId(), config.getTsBridgeChannelId());
                     logger.info("Moved to bridge channel " + config.getTsBridgeChannelId() + ".");
                 } catch (Exception moveEx) {
-                    logger.log(Level.WARNING,
-                            "Failed to move ServerQuery client to channel " + config.getTsBridgeChannelId()
-                                    + " — the channel ID may be wrong. "
-                                    + "Set tsBridgeChannelId=0 in config.yml for server-wide mode. "
-                                    + "Use /ts reload after correcting the value.",
-                            moveEx);
-                    logAvailableChannels();
+                    if (isAlreadyInChannelError(moveEx)) {
+                        // TS3 error 770 = already member of channel.
+                        // The onConnect handler (running concurrently) moved the client first.
+                        logger.info("ServerQuery client is already in bridge channel "
+                                + config.getTsBridgeChannelId() + ".");
+                    } else {
+                        logger.log(Level.WARNING,
+                                "Failed to move ServerQuery client to channel " + config.getTsBridgeChannelId()
+                                        + " — the channel ID may be wrong. "
+                                        + "Set tsBridgeChannelId=0 in config.yml for server-wide mode. "
+                                        + "Use /ts reload after correcting the value.",
+                                moveEx);
+                        logAvailableChannels();
+                    }
                 }
             }
         } catch (Exception e) {

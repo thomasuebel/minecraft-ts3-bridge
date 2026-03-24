@@ -5,7 +5,21 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased] — 1.0.0-SNAPSHOT
+## [Unreleased] — 1.1.3-SNAPSHOT
+
+### Iteration 28 — Fix SSH ServerQuery authentication
+
+SSH connections failed immediately with `Anonymous queries are not supported when using SSH` even when `tsQueryUsername` and `tsQueryPassword` were set in `config.yml`.
+
+**Root cause:** The HolyWaffle library authenticates during the SSH handshake and requires credentials on the `TS3Config` object (via `setLoginCredentials`) before `connect()` is called. The original implementation set the SSH protocol flag but relied on the post-connect `api.login()` call — the pattern used for RAW TCP. For SSH, that post-connect login is neither supported nor needed.
+
+**Fixes:**
+- `TeamspeakConnection` now calls `ts3Config.setLoginCredentials(username, password)` when `tsQueryProtocol=SSH`
+- The `api.login()` call is skipped for SSH in both the initial connect path and the reconnect handler
+- Extracted a `ConnectionSetup` record inside `TeamspeakConnection` to make the SSH/RAW credential decision explicit and unit-testable; `ConnectionSetup.from(PluginConfig)` resolves the protocol and `embedCredentials` flag without touching the third-party `TS3Config` API
+- ADR-0013 updated to document the SSH credential requirement and the `ConnectionSetup` architectural choice
+
+---
 
 ### Iteration 27 — Remove Bedrock/Floodgate; all players treated equally
 
