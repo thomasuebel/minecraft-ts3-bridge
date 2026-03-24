@@ -18,6 +18,8 @@ import java.util.logging.Logger;
 
 public class TeamspeakConnection implements TeamspeakGateway {
 
+    static final int TS3_ERR_CLIENT_NICKNAME_INUSE = 513;
+
     private final PluginConfig config;
     private final Logger logger;
     private Runnable onReconnect;
@@ -76,7 +78,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
                             try {
                                 api.setNickname(config.getTsQueryNickname());
                             } catch (TS3CommandFailedException e) {
-                                if (e.getError().getId() != 513) {
+                                if (e.getError().getId() != TS3_ERR_CLIENT_NICKNAME_INUSE) {
                                     logger.log(Level.WARNING, "Could not set nickname on reconnect.", e);
                                 }
                             }
@@ -127,8 +129,8 @@ public class TeamspeakConnection implements TeamspeakGateway {
             try {
                 api.setNickname(config.getTsQueryNickname());
             } catch (TS3CommandFailedException e) {
-                if (e.getError().getId() == 513) {
-                    // TS3 error 513 = TS_ERR_CLIENT_NICKNAME_INUSE
+                if (e.getError().getId() == TS3_ERR_CLIENT_NICKNAME_INUSE) {
+                    // TS3 error TS3_ERR_CLIENT_NICKNAME_INUSE = TS_ERR_CLIENT_NICKNAME_INUSE
                     // Happens on reload when the previous ServerQuery session hasn't fully
                     // closed on the server side yet. The plugin is otherwise fully connected.
                     logger.warning("Could not set nickname '" + config.getTsQueryNickname()
