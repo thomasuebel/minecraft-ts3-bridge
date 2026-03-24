@@ -102,7 +102,6 @@ public class TeamspeakConnection implements TeamspeakGateway {
                             } else {
                                 api.selectVirtualServerById(config.getTsVirtualServerId());
                             }
-                            connected = true;
                             try {
                                 api.setNickname(config.getTsQueryNickname());
                             } catch (TS3CommandFailedException e) {
@@ -122,6 +121,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
                             if (onReconnect != null) {
                                 onReconnect.run();
                             }
+                            connected = true;
                         } catch (Exception e) {
                             logger.log(Level.SEVERE, "Failed to complete post-reconnect setup.", e);
                             connected = false;
@@ -250,13 +250,13 @@ public class TeamspeakConnection implements TeamspeakGateway {
 
     @Override
     public void registerAllEvents() {
-        if (!connected || api == null) return;
+        if (api == null) return;
         api.registerAllEvents();
     }
 
     @Override
     public String getSelfUniqueId() {
-        if (!connected || api == null) return "";
+        if (api == null) return "";
         try {
             return api.whoAmI().getUniqueIdentifier();
         } catch (TS3QueryShutDownException e) {
@@ -278,7 +278,7 @@ public class TeamspeakConnection implements TeamspeakGateway {
 
     @Override
     public void registerBridge(TsToMcBridge bridge) {
-        if (!connected || api == null) return;
+        if (api == null) return;
         api.addTS3Listeners(new com.github.theholywaffle.teamspeak3.api.event.TS3EventAdapter() {
 
             @Override
