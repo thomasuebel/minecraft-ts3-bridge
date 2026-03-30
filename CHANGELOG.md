@@ -5,6 +5,20 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## 1.1.6
+
+### Added
+- bStats metrics integration (plugin ID 30483) — usage statistics reported anonymously via [bStats](https://bstats.org/plugin/bukkit/TS3Bridge/30483); operators can opt out in `plugins/bStats/config.yml`
+
+### Changed
+- Shadow plugin upgraded from `com.gradleup.shadow 8.3.6` to `9.4.1`
+
+### Documentation
+- Added plugin logo
+- Added Paper 1.21.x compatibility report
+
+---
+
 ## 1.1.5
 
 ### Documentation
