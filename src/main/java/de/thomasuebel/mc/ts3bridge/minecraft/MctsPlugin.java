@@ -12,12 +12,15 @@ import de.thomasuebel.mc.ts3bridge.teamspeak.TeamspeakService;
 import de.thomasuebel.mc.ts3bridge.teamspeak.TsToMcBridge;
 import de.thomasuebel.mc.ts3bridge.user.MappingsRepository;
 import de.thomasuebel.mc.ts3bridge.user.UserLinkService;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.nio.file.Path;
 
 public class MctsPlugin extends JavaPlugin {
+
+    private static final int BSTATS_PLUGIN_ID = 30483;
 
     private TeamspeakConnection teamspeakConnection;
     private TeamspeakService teamspeakService;
@@ -27,6 +30,7 @@ public class MctsPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         getDataFolder().mkdirs();
+        new Metrics(this, BSTATS_PLUGIN_ID);
         initialize();
     }
 
