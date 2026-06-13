@@ -5,6 +5,16 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Bug Fixes
+- Unlinked players now receive the TeamSpeak advertisement on **every** join, not only the first one per plugin lifecycle (#11). Previously, an in-memory session cache suppressed subsequent rejoins and the log misreported the reason as `(account is linked)`.
+
+### Changed
+- `AdvertisementService` simplified: removed the `advertisedThisSession` set and `markAdvertised(UUID)` method. `shouldAdvertise(UUID)` now returns `!repository.isLinked(uuid)`.
+
+---
+
 ## 1.1.6
 
 ### Added
