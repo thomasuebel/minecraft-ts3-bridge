@@ -5,7 +5,7 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased]
+## 1.1.7
 
 ### Bug Fixes
 - Unlinked players now receive the TeamSpeak advertisement on **every** join, not only the first one per plugin lifecycle (#11). Previously, an in-memory session cache suppressed subsequent rejoins and the log misreported the reason as `(account is linked)`.
