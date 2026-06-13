@@ -61,24 +61,13 @@ class AdvertisementServiceTest {
         assertFalse(service.shouldAdvertise(uuid));
     }
 
+    // Issue #11: an unlinked player must see the advertisement on every join,
+    // not just the first one within a plugin lifecycle.
     @Test
-    void advertisementIsShownOnFirstVisit() {
+    void unlinkedPlayerSeesAdvertisementOnEveryJoin() {
         UUID uuid = UUID.randomUUID();
-        assertTrue(service.shouldAdvertise(uuid));
-    }
 
-    @Test
-    void advertisementIsSuppressedAfterMarkAdvertised() {
-        UUID uuid = UUID.randomUUID();
-        service.markAdvertised(uuid);
-        assertFalse(service.shouldAdvertise(uuid));
-    }
-
-    @Test
-    void advertisementIsShownAgainAfterServiceReinit() {
-        UUID uuid = UUID.randomUUID();
-        service.markAdvertised(uuid);
-        AdvertisementService freshService = new AdvertisementService(config, repository);
-        assertTrue(freshService.shouldAdvertise(uuid));
+        assertTrue(service.shouldAdvertise(uuid), "first join: unlinked player should get the ad");
+        assertTrue(service.shouldAdvertise(uuid), "rejoin: unlinked player should still get the ad");
     }
 }
