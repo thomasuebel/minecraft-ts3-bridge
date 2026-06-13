@@ -82,17 +82,16 @@ class AdvertisementServiceTest {
         assertTrue(freshService.shouldAdvertise(uuid));
     }
 
-    // Issue #11: documents the CURRENT (buggy) behavior — an unlinked player who
-    // rejoins in the same plugin lifecycle is suppressed by the in-memory session
-    // cache. The next commit flips this assertion to the desired behavior.
+    // Issue #11: an unlinked player must see the advertisement on every join,
+    // not just the first one within a plugin lifecycle.
     @Test
-    void bug_unlinkedPlayerIsSuppressedOnRejoinInSameSession() {
+    void unlinkedPlayerSeesAdvertisementOnEveryJoin() {
         UUID uuid = UUID.randomUUID();
 
         assertTrue(service.shouldAdvertise(uuid), "first join: unlinked player should get the ad");
         service.markAdvertised(uuid);
 
-        assertFalse(service.shouldAdvertise(uuid),
-                "rejoin: BUG — ad is suppressed even though the player is not linked");
+        assertTrue(service.shouldAdvertise(uuid),
+                "rejoin: unlinked player should still get the ad");
     }
 }
